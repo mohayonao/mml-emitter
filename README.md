@@ -1,4 +1,9 @@
 # wamml
+[![NPM Version](http://img.shields.io/npm/v/wamml.svg?style=flat)](https://www.npmjs.org/package/wamml)
+[![Build Status](http://img.shields.io/travis/mohayonao/wamml.svg?style=flat)](https://travis-ci.org/mohayonao/wamml)
+[![Coverage Status](http://img.shields.io/coveralls/mohayonao/wamml.svg?style=flat)](https://coveralls.io/r/mohayonao/wamml?branch=master)
+[![Dependency Status](http://img.shields.io/david/mohayonao/wamml.svg?style=flat)](https://david-dm.org/mohayonao/wamml)
+[![devDependency Status](http://img.shields.io/david/dev/mohayonao/wamml.svg?style=flat)](https://david-dm.org/mohayonao/wamml)
 
 > **Wamml** (wáml, ワムル) is a MML sequencer for Web Audio API.
 
