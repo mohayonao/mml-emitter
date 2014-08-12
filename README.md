@@ -42,16 +42,16 @@ wamml.start();
 #### Mustache Bindings
 
 ```javascript
-var wamml = new Wamml(audioContext, "$ t{{tempo}} o{{octave}} cege gab<c >");
+var wamml = new Wamml(audioContext, "t{{tempo}} l{{len}} cege gab<c >");
 
-wamml.tempo  = 125;
-wamml.octave = 8;
+wamml.tempo = 125;
+wamml.len   = 16;
 ```
 
 #### Method Call
 
 ```javascript
-var wamml = new Wamml(audioContext, "t120 cdef @hello(10) gab<c >");
+var wamml = new Wamml(audioContext, "t120 l8 cdef @hello(10) gab<c >");
 
 wamml.hello = function(arg) {
   console.log(arg); // 10
@@ -108,9 +108,9 @@ wamml.hello = function(arg) {
 
 ###### Methods
 
-  - `on(eventName:string, fn:callback) : Wamml`
-  - `once(eventName:string, fn:callback) : Wamml`
-  - `off(eventName:string, fn:callback) : Wamml`
+  - `on(eventName:string, callback:function) : Wamml`
+  - `once(eventName:string, callback:function) : Wamml`
+  - `off(eventName:string, callback:function) : Wamml`
   - `start() : Wamml`
   - `stop() : Wamml`
 
@@ -122,8 +122,8 @@ wamml.hello = function(arg) {
 
 ###### Events
 
-  - `note (when:number, midi:int, duration:number, done:function)`
-  - `end ()`
+  - `"note" : (when:number, midi:number, duration:number, done:function)`
+  - `"end" : ()`
 
 ## Contribution
 
