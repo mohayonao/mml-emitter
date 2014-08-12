@@ -1,0 +1,14 @@
+{
+  "name": "wamml",
+  "description": "Wamml is a MML sequencer for Web Audio API",
+  "version": "0.0.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/mohayonao/wamml.git"
+  },
+  "keywords": [
+    "mml", "music", "web audio api"
+  ],
+  "dependencies": {}
+}
