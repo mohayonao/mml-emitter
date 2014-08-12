@@ -42,7 +42,7 @@ wamml.start();
 #### Mustache Bindings
 
 ```javascript
-var wamml = new Wamml("$ t{{tempo}} o{{octave}} cege gab<c >");
+var wamml = new Wamml(audioContext, "$ t{{tempo}} o{{octave}} cege gab<c >");
 
 wamml.tempo  = 125;
 wamml.octave = 8;
