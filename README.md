@@ -18,7 +18,7 @@
 ```javascript
 var wamml = new Wamml(audioContext, "t120 l8 cdef gab<c >");
 
-wamml.on("note:on", function(when, midi, duration) {
+wamml.on("note:on", function(when, midi, duration, done) {
   var osc = audioContext.createOscillator();
   var amp = audioContext.createGain();
 
@@ -27,6 +27,11 @@ wamml.on("note:on", function(when, midi, duration) {
 
   osc.start(when);
   osc.connect(amp);
+  amp.connect(audioContext.destination);
+
+  done(function() {
+    amp.disconnect();
+  });
 });
 
 wamml.start();
