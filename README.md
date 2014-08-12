@@ -18,11 +18,11 @@
 ```javascript
 var wamml = new Wamml(audioContext, "t120 l8 cdef gab<c >");
 
-wamml.on("note:on", function(when, midi, duration, done) {
+wamml.on("note", function(when, midi, duration, done) {
   var osc = audioContext.createOscillator();
   var amp = audioContext.createGain();
 
-  osc.frequency = midicps(midi);
+  osc.frequency.value = midicps(midi);
   amp.gain.linearRampToValueAtTime(0, when + duration);
 
   osc.start(when);
@@ -119,6 +119,11 @@ wamml.hello = function(arg) {
   - `context : AudioContext`
   - `mml : string`
   - `currentTime : number`
+
+###### Events
+
+  - `note (when:number, midi:int, duration:number, done:function)`
+  - `end ()`
 
 ## Contribution
 
