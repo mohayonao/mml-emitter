@@ -23,7 +23,7 @@ wamml.on("note", function(when, midi, duration, done) {
   var amp = audioContext.createGain();
 
   osc.frequency.value = midicps(midi);
-  amp.gain.linearRampToValueAtTime(0, when + duration);
+  amp.gain.linearRampToValueAtTime(0, when + duration + 0.5);
 
   osc.start(when);
   osc.connect(amp);
@@ -31,7 +31,7 @@ wamml.on("note", function(when, midi, duration, done) {
 
   done(function() {
     amp.disconnect();
-  });
+  }, 0.5); // called after noteOff + 0.5sec
 });
 
 wamml.start();
@@ -122,7 +122,7 @@ wamml.hello = function(arg) {
 
 ###### Events
 
-  - `"note" : (when:number, midi:number, duration:number, done:function)`
+  - `"note" : (when:number, midi:number, duration:number, done:function, index:number)`
   - `"end" : ()`
 
 ## Contribution
