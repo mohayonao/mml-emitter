@@ -1,2 +1,5 @@
 .DS_STORE
 node_modules/
+coverage/
+build/
+test/index.html

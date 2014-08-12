@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "0.10"
+env:
+  global:
+    - secure: "L/CmkfuyJg+n+DzQNnqTg59Ls3t7U3u1wULGkZncYtQqgxD5zHhECdeCKTwzPlZjTDBgvWHsQHmY3DT8UBgh/E8a0T0DGNjYO2u60j058znkQyCqmOi+H7n3uQWpKzqz+61QL5FHj4FaLZ+XWlNk+YgGKp7bJ6OoKIut5wfY3OY="
+before_install:
+  - npm install -g gulp
+  - npm install -g coveralls
+before_script:
+  - npm install gulp
+script:
+  - gulp travis
+after_success:
+  - coveralls < ./coverage/lcov.info
