@@ -14,6 +14,8 @@ var SYNTAX_INF_LOOP = 10;
 var SYNTAX_LOOP = 11;
 var SYNTAX_METHOD_CALL = 12;
 var SYNTAX_NUMBER = 13;
+var SYNTAX_STRING = 14;
+var SYNTAX_IDENTIFIER = 15;
 
 function Scanner(str) {
   this.str = String(str);
@@ -41,11 +43,11 @@ Scanner.prototype.match = function(matcher) {
     this.str.charAt(this.index) === matcher;
 };
 
-Scanner.prototype.expect = function(ch) {
-  if (this.peek() === ch) {
+Scanner.prototype.expect = function(matcher) {
+  if (this.match(matcher)) {
     this.index += 1;
   } else {
-    this.throwError("Unexpected token: " + this.peek());
+    this.throwUnexpectedToken();
   }
 };
 
@@ -76,12 +78,10 @@ Scanner.prototype.skipComment = function() {
       this.index += 1;
       this.lineNumber += 1;
       this.lineStart = this.index;
-    } else if (ch1 === 0x2f) { // /
-      if (ch2 === 0x2f) { // /
-        this.skipSingleLineComment();
-      } else if (ch2 === 0x2a) { // *
-        this.skipMultiLineComment();
-      }
+    } else if (ch1 === 0x2f && ch2 === 0x2f) {
+      this.skipSingleLineComment();
+    } else if (ch1 === 0x2f && ch2 === 0x2a) {
+      this.skipMultiLineComment();
     } else {
       break;
     }
@@ -110,7 +110,7 @@ Scanner.prototype.skipMultiLineComment = function() {
 
   this.index += 2; // skip /*
 
-  while (this.index <= len) {
+  while (this.index < len) {
     var ch1 = str.charCodeAt(this.index++);
     var ch2 = str.charCodeAt(this.index);
 
@@ -123,20 +123,23 @@ Scanner.prototype.skipMultiLineComment = function() {
     } else if (ch1 === 0x2a && ch2 === 0x2f) { // */
       this.index += 1;
       if (--depth === 0) {
+        this.index += 1;
         return;
       }
     }
   }
 
-  this.throwError("Unexpected token ILLEGAL");
+  this.throwUnexpectedToken();
 };
 
-Scanner.prototype.throwError = function(msg) {
+Scanner.prototype.throwUnexpectedToken = function() {
+  var ch = this.peek();
+  var msg = "Unexpected token" + (ch ? (": " + ch) : " ILLEGAL");
   var err = new SyntaxError(msg);
 
   err.index = this.index;
   err.lineNumber = this.lineNumber;
-  err.column = this.index - this.lineStart + 1;
+  err.column = this.index - this.lineStart + (ch ? 1 : 0);
 
   console.error(err);
 
@@ -177,7 +180,7 @@ MMLParser.prototype.advance = function() {
     return this.parseMethodCall();
   }
 
-  this.scanner.throwError("Unexpected token: " + this.scanner.peek());
+  this.scanner.throwUnexpectedToken();
 };
 
 MMLParser.prototype.parseMML = function() {
@@ -256,7 +259,8 @@ MMLParser.prototype.parseNote = function(offset, withDuration) {
 };
 
 MMLParser.prototype.parseChord = function() {
-  this.scanner.next();
+  this.scanner.expect("(");
+  this.scanner.skipComment();
 
   var list = [];
   var offset = 0;
@@ -276,7 +280,7 @@ MMLParser.prototype.parseChord = function() {
       offset -= 12;
       break;
     default:
-      this.scanner.throwError("Unexpected token: " + ch);
+      this.scanner.throwUnexpectedToken();
     }
     this.scanner.skipComment();
   }
@@ -293,7 +297,7 @@ MMLParser.prototype.parseChord = function() {
 };
 
 MMLParser.prototype.parseRest = function() {
-  this.scanner.next();
+  this.scanner.expect("r");
 
   return {
     type: SYNTAX_REST,
@@ -304,7 +308,7 @@ MMLParser.prototype.parseRest = function() {
 };
 
 MMLParser.prototype.parseOctave = function() {
-  this.scanner.next();
+  this.scanner.expect("o");
 
   return {
     type: SYNTAX_OCTAVE,
@@ -313,7 +317,7 @@ MMLParser.prototype.parseOctave = function() {
 };
 
 MMLParser.prototype.parseOctaveShift = function(direction) {
-  this.scanner.next();
+  this.scanner.expect(/[<>]/);
 
   return {
     type: SYNTAX_OCTAVE_SHIFT,
@@ -323,7 +327,7 @@ MMLParser.prototype.parseOctaveShift = function(direction) {
 };
 
 MMLParser.prototype.parseLength = function() {
-  this.scanner.next();
+  this.scanner.expect("l");
 
   return {
     type: SYNTAX_LENGTH,
@@ -351,7 +355,7 @@ MMLParser.prototype.parseTie = function() {
 };
 
 MMLParser.prototype.parseQuantize = function() {
-  this.scanner.next();
+  this.scanner.expect("q");
 
   return {
     type: SYNTAX_QUANTIZE,
@@ -360,7 +364,7 @@ MMLParser.prototype.parseQuantize = function() {
 };
 
 MMLParser.prototype.parseTempo = function() {
-  this.scanner.next();
+  this.scanner.expect("t");
 
   return {
     type: SYNTAX_TEMPO,
@@ -369,7 +373,7 @@ MMLParser.prototype.parseTempo = function() {
 };
 
 MMLParser.prototype.parseInfiniteLoop = function() {
-  this.scanner.next();
+  this.scanner.expect("$");
 
   var list = [];
 
@@ -384,17 +388,53 @@ MMLParser.prototype.parseInfiniteLoop = function() {
 };
 
 MMLParser.prototype.parseLoop = function() {
-  this.scanner.next();
+  this.scanner.expect("[");
+
+  var count = 2;
+  var loopItems = this.parseLoopItems();
+
+  this.scanner.expect("]");
+  this.scanner.skipComment();
+
+  if (this.scanner.match(/\d/)) {
+    count = +this.scanner.scan(/\d+/);
+  }
 
   return {
     type: SYNTAX_LOOP,
+    count: count,
+    seq1: loopItems.seq1,
+    seq2: loopItems.seq2
   };
 };
 
-MMLParser.prototype.parseMethodCall = function() {
-  this.scanner.next();
+MMLParser.prototype.parseLoopItems = function() {
+  var seq1 = [];
+  var seq2 = [];
 
-var methodName = this.scanner.scan(/\$?[a-z][a-zA-Z0-9]*/);
+  this.scanner.skipComment();
+
+  while (!this.scanner.eos() && !this.scanner.match(/[|\]]/)) {
+    seq1.push(this.advance());
+    this.scanner.skipComment();
+  }
+
+  if (this.scanner.match("|")) {
+    this.scanner.next();
+
+    while (!this.scanner.eos() && !this.scanner.match("]")) {
+      seq2.push(this.advance());
+      this.scanner.skipComment();
+    }
+  }
+
+  return { seq1: seq1, seq2: seq2 };
+};
+
+MMLParser.prototype.parseMethodCall = function() {
+  this.scanner.expect("@");
+
+  var methodName = this.scanner.scan(/\$?[a-z][a-zA-Z0-9]*/);
 
   this.scanner.skipComment();
 
@@ -413,6 +453,47 @@ var methodName = this.scanner.scan(/\$?[a-z][a-zA-Z0-9]*/);
   };
 };
 
+MMLParser.prototype.parseMethodArgument = function() {
+  var list = [];
+
+  this.scanner.expect("(");
+
+  while (!this.scanner.eos() && !this.scanner.match(")")) {
+    this.scanner.skipComment();
+
+    if (this.scanner.match(/\d/)) {
+      list.push({
+        type: SYNTAX_NUMBER,
+        value: +this.scanner.scan(/\d+(\.\d+)?/)
+      })
+    } else if (this.scanner.match(/['"]/)) {
+      list.push({
+        type: SYNTAX_STRING,
+        value: this.scanner.scan(/(['"]).*\1/).slice(1, -1)
+      })
+    } else if (this.scanner.match(/[$a-z]/)) {
+      list.push({
+        type: SYNTAX_IDENTIFIER,
+        value: this.scanner.scan(/\$?[a-z][a-zA-Z0-9]*/)
+      });
+    } else {
+      this.throwUnexpectedToken();
+    }
+
+    this.scanner.skipComment();
+    if (this.scanner.match(",")) {
+      this.scanner.next();
+    } else {
+      break;
+    }
+  }
+
+  this.scanner.expect(")");
+
+  return list;
+};
+
+
 module.exports = {
   Syntax: {
     MML: SYNTAX_MML,
@@ -429,6 +510,8 @@ module.exports = {
     Loop: SYNTAX_LOOP,
     MethodCall: SYNTAX_METHOD_CALL,
     Number: SYNTAX_NUMBER,
+    String: SYNTAX_STRING,
+    Identifier: SYNTAX_IDENTIFIER,
   },
   parse: function(mml) {
     return new MMLParser(mml).parseMML();

@@ -4,17 +4,6 @@ var mmlParser = require("../../src/mml-parser");
 var Syntax = mmlParser.Syntax;
 
 describe("mml-parser", function() {
-
-  function error(msg, index, lineNumber, column) {
-    var err = new SyntaxError(msg);
-
-    err.index = index;
-    err.lineNumber = lineNumber;
-    err.column = column;
-
-    return err;
-  }
-
   var testCase = {
     "": {
       type: Syntax.MML,
@@ -24,11 +13,11 @@ describe("mml-parser", function() {
       type: Syntax.MML,
       list: []
     },
-    "//\n//": {
+    "// single line comment\n\n//": {
       type: Syntax.MML,
       list: []
     },
-    // "/* /*": error("Unexpected token ILLEGAL", 5, 1, 1),
+    "/* /*": new SyntaxError("Unexpected token ILLEGAL"),
     "c d e": {
       type: Syntax.MML,
       list: [
@@ -222,6 +211,8 @@ describe("mml-parser", function() {
         }
       ]
     },
+    "(ceg": new SyntaxError("Unexpected token ILLEGAL"),
+    "(/": new SyntaxError("Unexpected token: /"),
     "(ceg)8 ^ 16 ^ ..": {
       type: Syntax.MML,
       list: [
@@ -480,6 +471,132 @@ describe("mml-parser", function() {
           ]
         }
       ]
+    },
+    "[ ce | df ]4": {
+      type: Syntax.MML,
+      list: [
+        {
+          type: Syntax.Loop,
+          count: 4,
+          seq1: [
+            {
+              type: Syntax.Note,
+              number: 0,
+              length: null,
+              dot: 0,
+              tie: null
+            },
+            {
+              type: Syntax.Note,
+              number: 4,
+              length: null,
+              dot: 0,
+              tie: null
+            }
+          ],
+          seq2: [
+            {
+              type: Syntax.Note,
+              number: 2,
+              length: null,
+              dot: 0,
+              tie: null
+            },
+            {
+              type: Syntax.Note,
+              number: 5,
+              length: null,
+              dot: 0,
+              tie: null
+            }
+          ]
+        }
+      ]
+    },
+    "[ c [ e ] g ]": {
+      type: Syntax.MML,
+      list: [
+        {
+          type: Syntax.Loop,
+          count: 2,
+          seq1: [
+            {
+              type: Syntax.Note,
+              number: 0,
+              length: null,
+              dot: 0,
+              tie: null
+            },
+            {
+              type: Syntax.Loop,
+              count: 2,
+              seq1: [
+                {
+                  type: Syntax.Note,
+                  number: 4,
+                  length: null,
+                  dot: 0,
+                  tie: null
+                }
+              ],
+              seq2: []
+            },
+            {
+              type: Syntax.Note,
+              number: 7,
+              length: null,
+              dot: 0,
+              tie: null
+            }
+          ],
+          seq2: []
+        }
+      ]
+    },
+    "[ ce": new SyntaxError("Unexpected token ILLEGAL"),
+    "[ $ abcd ]": new SyntaxError("Unexpected token: ]"),
+    "@method": {
+      type: Syntax.MML,
+      list: [
+        {
+          type: Syntax.MethodCall,
+          name: "method",
+          args: []
+        }
+      ]
+    },
+    "@$method()": {
+      type: Syntax.MML,
+      list: [
+        {
+          type: Syntax.MethodCall,
+          name: "$method",
+          args: []
+        }
+      ]
+    },
+    "@method(1, 'str', id)": {
+      type: Syntax.MML,
+      list: [
+        {
+          type: Syntax.MethodCall,
+          name: "method",
+          args: [
+            {
+              type: Syntax.Number,
+              value: 1
+            },
+            {
+              type: Syntax.String,
+              value: "str"
+            },
+            {
+              type: Syntax.Identifier,
+              value: "id"
+            },
+          ]
+        }
+      ]
     }
   };
 
@@ -488,7 +605,7 @@ describe("mml-parser", function() {
       if (testCase[mml] instanceof Error) {
         expect(function() {
           mmlParser.parse(mml);
-        }).throw(testCase[mml]);
+        }).throw(testCase[mml].constructor, testCase[mml].message);
       } else {
         expect(mmlParser.parse(mml)).to.eql(testCase[mml]);
       }
