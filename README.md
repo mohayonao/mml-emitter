@@ -39,7 +39,6 @@ mml.on("note", function(when, midi, duration, noteOff) {
   }, 0.5); // called after noteOff + 0.5sec
 });
 
-
 var sequencer = new wamml.Sequencer(audioContext, mml);
 
 sequencer.start();
@@ -82,7 +81,7 @@ var track1 = new wamml.MML("t {{ $tempo }} l8 gab<c defg >");
 
 var sequencer = new wamml.Sequencer(audioContext, track0, track1);
 
-sequencer.tempo = 120; // shared directive with oter tracks
+sequencer.tempo = 120; // shared directive for all tracks
 sequencer.getTrack(0).on("note", noteOnFunction0);
 sequencer.getTrack(1).on("note", noteOnFunction1);
 
@@ -176,7 +175,7 @@ sequencer.start();
   - `mml : string`
   - `context : AudioContext`
   - `currentTime : number`
-  - `$ : object` - variables which shared with other tracks
+  - `$ : object` - variables which shared with all tracks
 
 ###### Events
 
