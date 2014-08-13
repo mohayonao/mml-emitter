@@ -21,9 +21,9 @@
 ## Usage
 
 ```javascript
-var wamml = new Wamml(audioContext, "t120 l8 cdef gab<c >");
+var mml = new wamml.MML("t120 l8 cdef gab<c >");
 
-wamml.on("note", function(when, midi, duration, done) {
+mml.on("note", function(when, midi, duration, noteOff) {
   var osc = audioContext.createOscillator();
   var amp = audioContext.createGain();
 
@@ -34,101 +34,154 @@ wamml.on("note", function(when, midi, duration, done) {
   osc.connect(amp);
   amp.connect(audioContext.destination);
 
-  done(function() {
+  noteOff(function() {
     amp.disconnect();
   }, 0.5); // called after noteOff + 0.5sec
 });
 
-wamml.start();
+
+var sequencer = new wamml.Sequencer(audioContext, mml);
+
+sequencer.start();
 ```
 
 ## Features
 
-#### Mustache Bindings
+#### Directives
 
 ```javascript
-var wamml = new Wamml(audioContext, "t{{tempo}} l{{len}} cege gab<c >");
+var mml = new wamml.MML("t {{ tempo }} l {{ len }} cdef gab<c >");
 
-wamml.tempo = 125;
-wamml.len   = 16;
+mml.tempo = 120;
+mml.len   =   8;
+```
+
+##### avalable operators in directives
+
+```javascript
+"{{ val = 120 }}" // assignment
+"{{ val +  40 }}" // binary expresion
+"{{ val += 40 }}" // compound assignment
 ```
 
 #### Method Call
 
 ```javascript
-var wamml = new Wamml(audioContext, "t120 l8 cdef @hello(10) gab<c >");
+var mml = new wamml.MML("t120 l8 cdef @hello(10) gab<c >");
 
-wamml.hello = function(arg) {
+mml.hello = function(arg) {
   console.log(arg); // 10
 };
+```
+
+#### Multi Tracks
+
+```javascript
+var track0 = new wamml.MML("t {{ $tempo }} l8 cdef gab<c >");
+var track1 = new wamml.MML("t {{ $tempo }} l8 gab<c defg >");
+
+var sequencer = new wamml.Sequencer(audioContext, track0, track1);
+
+sequencer.tempo = 120; // shared directive with oter tracks
+sequencer.getTrack(0).on("note", noteOnFunction0);
+sequencer.getTrack(1).on("note", noteOnFunction1);
+
+sequencer.start();
 ```
 
 ## Syntax
 
 ###### Control
 
-  - **t**_n_
+  - **t** _[number]_
     - tempo (1-511, default: 120)
   - **$**
     - infinite loop
-  - **[** ... **|** ... **]**_n_
+  - **[** ... **|** ... **]** _[number]_
     - loop
 
 ###### Pitch
 
-  - [**a**-**g**][**+-**]?_n_**.***
+  - [**a**-**g**] [**-+**]? _[number]_ **.***
     - note on (1-1920, default: l)
-  - **(** [**a**-**g**][**+-**]? (**,** [**a**-**g**][**+-**]?)+ **)**_n_
+  - **(** ( [**a**-**g**] [**-+**]? | [**<>**] )+ **)** _[number]_ **.***
     - chord (1-1920, default: l)
-  - **r**_n_**.***
+  - **r** _[number]_ **.***
     - rest (1-1920, default: l)
-  - **o**_n_
+  - **o** _[number]_
     - octave (0-9, default: 5)
-  - [**<>**]_n_
+  - [**<>**] _[number]_
     - octave shift (1-9, default: 1)
 
 ###### Duration
 
-  - **l**_n_**.***
+  - **l** _[number]_ **.***
     - length (1-1920, default: 4)
-  - **^**_n_**.***
+  - **^** _[number]_ **.***
     - tie (1-1920, default: l)
-  - **q**_n_
+  - **q** _[number]_
     - quantize (0-8, default: 6)
 
 ###### Programming
 
   - **//** ...
     - comment
-  - **/*** ... ***/**
+  - **/*** ... **\*/**
     - block comment
-  - **@** ... **(** ...args **)**
+  - **@** _identifier_ **(** _...args:[identifier|number|string]_ **)**
     - method call
+  - **{{** _expression_ **}}**
+    - directive
 
 ## API
 
+### Sequencer
+
 ###### Constructor
 
-  - `new Wamml(ctx:AudioContext, mml:string="") : Wamml`
+  - `new wamml.Sequencer(audioContext:AudioContext, ... [mml:MML]) : Sequencer`
 
 ###### Methods
 
-  - `on(eventName:string, callback:function) : Wamml`
-  - `once(eventName:string, callback:function) : Wamml`
-  - `off(eventName:string, callback:function) : Wamml`
-  - `start() : Wamml`
-  - `stop() : Wamml`
+  - `getTrack(index:number) : MML`
+  - `on(eventName:string, callback:function) : Sequencer`
+  - `once(eventName:string, callback:function) : Sequencer`
+  - `off(eventName:string, callback:function) : Sequencer`
+  - `start() : Sequencer`
+  - `stop() : Sequencer`
 
 ###### Properties
 
   - `context : AudioContext`
-  - `mml : string`
   - `currentTime : number`
 
 ###### Events
 
-  - `"note" : (when:number, midi:number, duration:number, done:function, index:number)`
-  - `"end" : ()`
+  - `"end" : (when:number)`
+
+### MML
+
+###### Constructor
+
+  - `new wamml.MML(mml:string="") : MML`
+
+###### Methods
+
+  - `on(eventName:string, callback:function) : MML`
+  - `once(eventName:string, callback:function) : MML`
+  - `off(eventName:string, callback:function) : MML`
+
+###### Properties
+
+  - `mml : string`
+  - `context : AudioContext`
+  - `currentTime : number`
+  - `$ : object` - variables which shared with other tracks
+
+###### Events
+
+  - `"note" : (when:number, midi:number, duration:number, noteOff:function, index:number)`
+  - `"end" : (when:number)`
 
 ## Contribution
 
