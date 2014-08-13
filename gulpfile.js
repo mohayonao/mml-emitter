@@ -49,7 +49,7 @@ gulp.task("build", function() {
   gulp.src("index.js")
     /* wamml.js */
     .pipe(browerify({
-      standalone: "Wamml"
+      standalone: "wamml"
     }))
     .pipe(rename("wamml.js"))
     .pipe(gulp.dest("build"))

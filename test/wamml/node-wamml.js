@@ -6,7 +6,7 @@ describe("wamml", function() {
     it("should equal the version specified by package.json", function() {
       var pkg = require("../../package.json");
 
-      expect(Wamml.version).to.equal(pkg.version);
+      expect(wamml.version).to.equal(pkg.version);
     });
   });
 
