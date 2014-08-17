@@ -14,8 +14,8 @@
 
 ##### browser
 
-  - [wamml.js](mohayonao.github.io/wamml/build/wamml.js)
-  - [wamml.min.js](mohayonao.github.io/wamml/build/wamml.min.js)
+  - [wamml.js](http://mohayonao.github.io/wamml/build/wamml.js)
+  - [wamml.min.js](http://mohayonao.github.io/wamml/build/wamml.min.js)
 
 ```html
 <script src="/path/to/wamml.js"></script>
