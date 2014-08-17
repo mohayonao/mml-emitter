@@ -14,7 +14,7 @@
     "web audio api"
   ],
   "scripts": {
-    "test": "mocha test/wamml"
+    "test": "mocha"
   },
   "dependencies": {},
   "devDependencies": {
