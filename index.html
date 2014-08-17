@@ -47,6 +47,8 @@
     $(function() {
       "use strict";
 
+      var AudioContext = window.AudioContext || window.webkitAudioContext;
+
       var sequencer = null;
       var audioContext = new AudioContext();
       var editor = CodeMirror(document.getElementById("editor"), {
