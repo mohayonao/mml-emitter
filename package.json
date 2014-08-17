@@ -1,7 +1,7 @@
 {
   "name": "wamml",
   "description": "Wamml is a MML sequencer for Web Audio API",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "author": "Nao Yonamine <mohayonao@gmail.com>",
   "license": "MIT",
   "repository": {
@@ -14,7 +14,7 @@
     "web audio api"
   ],
   "scripts": {
-    "test": "mocha test/wamml"
+    "test": "mocha"
   },
   "dependencies": {},
   "devDependencies": {
@@ -25,7 +25,6 @@
     "gulp-jshint": "^1.8.4",
     "gulp-mocha": "^0.5.2",
     "gulp-rename": "^1.2.0",
-    "gulp-replace": "^0.4.0",
     "gulp-uglify": "^0.3.1",
     "jshint-stylish": "^0.4.0"
   }
