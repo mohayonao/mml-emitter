@@ -10,14 +10,14 @@ function schedSorter(a, b) {
   return a[WHEN] - b[WHEN];
 }
 
-function Track(nodes) {
+function Track(parent, nodes) {
   Emitter.call(this);
 
+  this._parent = parent;
   this._nodes = nodes;
   this._state = {
     index: 0,
-    emit : this.emit.bind(this),
-    sched: this.sched.bind(this)
+    postMessage: this.onmessage.bind(this)
   };
   this._sched = [];
   this._currentTimeIncr = 0;
@@ -42,7 +42,7 @@ Track.prototype._init = function(currentTime, currentTimeIncr) {
     }
 
     if (state.index < nodes.length) {
-      state.sched(currentTime, next);
+      this.sched(currentTime, next);
     }
 
   }.bind(this);
@@ -60,6 +60,22 @@ Track.prototype._process = function(currentTime) {
     var elem = sched.shift();
 
     elem[FUNC](elem[WHEN], state);
+  }
+};
+
+Track.prototype.onmessage = function(message) {
+  switch (message.type) {
+  case "sched":
+    this.sched(message.when, message.callback);
+    break;
+  case "end":
+    this.emit.apply(this, [ message.type ].concat(message.args));
+    if (this._parent && message.type === "end") {
+      this._parent.onmessage(message);
+    }
+    break;
+  default:
+    this.emit.apply(this, [ message.type ].concat(message.args));
   }
 };
 

@@ -124,8 +124,9 @@ describe("compile", function() {
       var obj = new Emitter();
       var state = {
         index: 0,
-        emit : obj.emit.bind(obj),
-        sched: function() {}
+        postMessage: function(message) {
+          obj.emit.apply(obj, [ message.type ].concat(message.args));
+        }
       };
       var when = 0;
 

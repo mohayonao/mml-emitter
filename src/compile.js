@@ -62,7 +62,10 @@ compile[Syntax.End] = function() {
         state.index = state.infLoopIndex;
       }
     } else {
-      state.emit("end", currentTime);
+      state.postMessage({
+        type: "end",
+        args: [ currentTime ]
+      });
     }
   };
 };
@@ -80,10 +83,17 @@ compile[Syntax.Note] = function(node) {
       var midi = state.octave * 12 + number + 12;
 
       function noteOff(fn, offset) {
-        state.sched(currentTime + duration + (offset || 0), fn);
+        state.postMessage({
+          type: "sched",
+          when: currentTime + duration + (offset || 0),
+          callback: fn
+        });
       }
 
-      state.emit("note", currentTime, midi, duration, noteOff, index);
+      state.postMessage({
+        type: "note",
+        args: [ currentTime, midi, duration, noteOff, index ]
+      });
     });
 
     return currentTime + totalDuration;

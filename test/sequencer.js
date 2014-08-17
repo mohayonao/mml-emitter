@@ -19,15 +19,23 @@ describe("sequencer", function() {
 
     sequencer.tracks[0].on("note", function(when, midi) {
       timeline.push([ when, "note(0)", midi ]);
+    }).on("end", function(when) {
+      timeline.push([ when, "end(0)" ]);
     });
 
     sequencer.tracks[1].on("note", function(when, midi) {
       timeline.push([ when, "note(1)", midi ]);
+    }).on("end", function(when) {
+      timeline.push([ when, "end(1)" ]);
+    });
+
+    sequencer.on("end", function(when) {
+      timeline.push([ when, "end(*)" ]);
     });
 
     sequencer.start();
 
-    audioContext.process(2);
+    audioContext.process(2.5);
 
     sequencer.stop();
 
@@ -43,7 +51,10 @@ describe("sequencer", function() {
       [ 1.25, 'note(1)', 62 ],
       [ 1.50, 'note(0)', 76 ],
       [ 1.50, 'note(1)', 62 ],
-      [ 1.75, 'note(1)', 62 ]
+      [ 1.75, 'note(1)', 62 ],
+      [ 2.00, 'end(0)' ,    ],
+      [ 2.00, 'end(1)' ,    ],
+      [ 2.00, 'end(*)' ,    ],
     ]);
   });
 });

@@ -13,8 +13,9 @@ function Sequencer(audioContext, mml) {
 
   this.audioContext = audioContext;
   this.tracks = parse(mml).map(compile).map(function(nodes) {
-    return new Track(nodes);
-  });
+    return new Track(this, nodes);
+  }, this);
+  this._ended = 0;
   this._node = null;
   this._currentTime = 0;
   this._currentTimeIncr = 0;
@@ -47,6 +48,16 @@ Sequencer.prototype.stop = function() {
   this._node = null;
 
   return this;
+};
+
+Sequencer.prototype.onmessage = function(message) {
+  /* istanbul ignore else */
+  if (message && message.type === "end") {
+    this._ended += 1;
+    if (this.tracks.length <= this._ended) {
+      this.emit("end", message.args[0]);
+    }
+  }
 };
 
 Sequencer.prototype._process = function() {
