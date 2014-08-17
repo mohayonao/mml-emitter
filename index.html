@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>wamml</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.4.0/codemirror.min.css">
+    <style type="text/css">
+      body { background: #ecf0f1 }
+      .btn { margin-top: 10px; width: 100px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>wamml</h1>
+      <p>Wamml is a MML sequencer for Web Audio API.</p>
+      <div id="app">
+        <div class="row">
+          <div class="col-md-9">
+            <div id="editor"></div>
+            <div class="form-group">
+              <div class="btn btn-default" v-on="click: isPlaying ? stop() : play()">{{ isPlaying ? 'Stop' : 'Play' }}</div>
+            </div>
+            <div class="well">
+              <span v-style="display: message ? 'inline' : 'none'"><strong>SYNTAX ERROR!!</strong> {{ message }}</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <h4>Examples</h4>
+            <ul>
+              <li v-repeat="examples" v-on="click: mml = source"><a href="javascript:void(0)">{{ title }}</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <a href="https://github.com/mohayonao/wamml">
+      <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png">
+    </a>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/0.10.5/vue.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.4.0/codemirror.min.js"></script>
+    <script src="build/wamml.min.js"></script>
+    <script>
+    $(function() {
+      "use strict";
+
+      var sequencer = null;
+      var audioContext = new AudioContext();
+      var editor = CodeMirror(document.getElementById("editor"), {
+        lineNumbers: true,
+      });
+
+      var vue = new Vue({
+        el: "#app",
+        data: {
+          isPlaying: false,
+          message: "",
+          examples: []
+        },
+        computed: {
+          mml: {
+            $get: function() {
+              return editor.getValue();
+            },
+            $set: function(value) {
+              editor.setValue(value);
+            }
+          }
+        },
+        methods: {
+          play: function() {
+            if (sequencer) {
+              sequencer.stop();
+            }
+
+            try {
+              sequencer = new wamml.Sequencer(audioContext, this.mml);
+            } catch (e) {
+              sequencer = null;
+              this.message = e.message;
+              editor.focus();
+              editor.setCursor({ line: e.lineNumber - 1, ch: e.column - 1 });
+              throw e;
+            }
+
+            if (sequencer) {
+              this.message = "";
+
+              sequencer.tracks.forEach(function(track) {
+                track.on("note", toneGenerator);
+              });
+              sequencer.on("end", function() {
+                vue.stop();
+              });
+              sequencer.start();
+
+              this.isPlaying = true;
+            }
+          },
+          stop: function() {
+            if (sequencer) {
+              sequencer.stop();
+            }
+            this.isPlaying = false;
+          }
+        }
+      });
+
+      function midicps(num) {
+        return 440 * Math.pow(2, (num - 69) * 1 / 12);
+      }
+
+      function toneGenerator(when, midi, duration, noteOff) {
+        var osc = audioContext.createOscillator();
+        var amp = audioContext.createGain();
+
+        osc.frequency.value = midicps(midi);
+        osc.type = "triangle";
+        amp.gain.setValueAtTime(0.5, when);
+        amp.gain.linearRampToValueAtTime(0.4, when + duration * 0.75);
+        amp.gain.linearRampToValueAtTime(0.0, when + duration);
+
+        osc.start(when);
+        osc.connect(amp);
+        amp.connect(audioContext.destination);
+
+        noteOff(function() {
+          amp.disconnect();
+        });
+      }
+
+      function readFromGist(gistid, callback) {
+        var url = "https://api.github.com/gists/" + gistid;
+        $.ajax({ url: url, type: "GET", dataType: "jsonp" }).then(function(result) {
+          if (result.data.files) {
+            callback(result.data.files);
+          } else {
+            console.warn("gist:" + gistid + " not found");
+          }
+        });
+      }
+
+      function updateExamples(gistid) {
+        readFromGist(gistid, function(files) {
+          var examples = _.chain(files).filter(function(file) {
+            return /^(.+)\.mml$/.test(file.filename);
+          }).map(function(file) {
+            return {
+              title : file.filename.match(/^(.+)\.mml$/)[1],
+              source: file.content
+            };
+          }).value();
+
+          vue.mml = (_.find(examples, function(example) {
+            return example.title === "default";
+          }) || {}).source || "";
+
+          vue.examples = _.filter(examples, function(example) {
+            return example.title !== "default";
+          });
+        });
+      }
+
+      window.onhashchange = function() {
+        var matched = /^#gistid:([a-f\d]+)$/.exec(location.hash);
+        if (matched) {
+          updateExamples(matched[1]);
+        }
+      };
+
+      if (location.hash) {
+        window.onhashchange();
+      } else {
+        updateExamples("434a459011acc3402b9b");
+      }
+    });
+    </script>
+  </body>
+</html>
