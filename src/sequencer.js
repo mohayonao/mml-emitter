@@ -3,15 +3,17 @@
 var BUFFER_SIZE = 512;
 
 var extend  = require("./extend");
+var parse   = require("./parse");
+var compile = require("./compile");
 var Emitter = require("./emitter");
-var MML     = require("./mml");
+var Track   = require("./track");
 
-function Sequencer(audioContext) {
+function Sequencer(audioContext, mml) {
   Emitter.call(this);
 
   this.audioContext = audioContext;
-  this.tracks = [].slice.call(arguments, 1).map(function(mml) {
-    return new MML(mml);
+  this.tracks = parse(mml).map(compile).map(function(nodes) {
+    return new Track(nodes);
   });
   this._node = null;
   this._currentTime = 0;

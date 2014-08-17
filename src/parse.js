@@ -354,7 +354,17 @@ function parse(scanner) {
     var seq = [];
 
     until("", function() {
-      append(seq, advance());
+      var track = [];
+
+      until(";", function() {
+        append(track, advance());
+      });
+
+      seq.push(track);
+
+      if (scanner.match(";")) {
+        scanner.next();
+      }
     });
 
     return seq;

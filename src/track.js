@@ -3,8 +3,6 @@
 var WHEN = 0;
 var FUNC = 1;
 
-var compile = require("./compile");
-var parse   = require("./parse");
 var extend  = require("./extend");
 var Emitter = require("./emitter");
 
@@ -12,14 +10,10 @@ function schedSorter(a, b) {
   return a[WHEN] - b[WHEN];
 }
 
-function MML(mml) {
-  if (mml instanceof MML) {
-    return mml;
-  }
-
+function Track(nodes) {
   Emitter.call(this);
 
-  this._nodes = compile(parse(mml));
+  this._nodes = nodes;
   this._state = {
     index: 0,
     emit : this.emit.bind(this),
@@ -28,9 +22,9 @@ function MML(mml) {
   this._sched = [];
   this._currentTimeIncr = 0;
 }
-extend(MML, Emitter);
+extend(Track, Emitter);
 
-MML.prototype._init = function(currentTime, currentTimeIncr) {
+Track.prototype._init = function(currentTime, currentTimeIncr) {
   this._currentTimeIncr = currentTimeIncr;
 
   var next = function(currentTime, state) {
@@ -56,7 +50,7 @@ MML.prototype._init = function(currentTime, currentTimeIncr) {
   next(currentTime, this._state);
 };
 
-MML.prototype._process = function(currentTime) {
+Track.prototype._process = function(currentTime) {
   var nextCurrentTime = currentTime + this._currentTimeIncr;
 
   var sched = this._sched;
@@ -69,11 +63,11 @@ MML.prototype._process = function(currentTime) {
   }
 };
 
-MML.prototype.sched = function(when, fn) {
+Track.prototype.sched = function(when, fn) {
   this._sched.push([ when, fn ]);
   this._sched.sort(schedSorter);
 
   return this;
 };
 
-module.exports = MML;
+module.exports = Track;

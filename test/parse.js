@@ -11,7 +11,7 @@ describe("parse", function() {
     "/* //*\n\n**/ */": [],
     "/*": new SyntaxError("Unexpected token ILLEGAL"),
     "日本語": new SyntaxError("Unexpected token: '日'"),
-    "c d e": [
+    "c d e": [[
       {
         type: Syntax.Note,
         number: [ 0 ],
@@ -27,8 +27,8 @@ describe("parse", function() {
         number: [ 4 ],
         length: [ null ]
       },
-    ],
-    "f+ b-": [
+    ]],
+    "f+ b-": [[
       {
         type: Syntax.Note,
         number: [ 6 ],
@@ -39,8 +39,8 @@ describe("parse", function() {
         number: [ 10 ],
         length: [ null ]
       }
-    ],
-    "f4 g8..": [
+    ]],
+    "f4 g8..": [[
       {
         type: Syntax.Note,
         number: [ 5 ],
@@ -51,90 +51,90 @@ describe("parse", function() {
         number: [ 7 ],
         length: [ 8, 0, 0 ],
       },
-    ],
-    "b ^4": [
+    ]],
+    "b ^4": [[
       {
         type: Syntax.Note,
         number: [ 11 ],
         length: [ null, 4 ]
       }
-    ],
-    "c ^^": [
+    ]],
+    "c ^^": [[
       {
         type: Syntax.Note,
         number: [ 0 ],
         length: [ null, null, null ]
       }
-    ],
+    ]],
     "c 4": new SyntaxError("Unexpected token: '4'"),
     "c4 ^ 8": new SyntaxError("Unexpected token: '8'"),
-    "(ceg)": [
+    "(ceg)": [[
       {
         type: Syntax.Note,
         number: [ 0, 4, 7 ],
         length: [ null ]
       }
-    ],
-    "( g<ce )": [
+    ]],
+    "( g<ce )": [[
       {
         type: Syntax.Note,
         number: [ 7, 12, 16 ],
         length: [ null ]
       }
-    ],
-    "(c > g e)": [
+    ]],
+    "(c > g e)": [[
       {
         type: Syntax.Note,
         number: [ 0, -5, -8 ],
         length: [ null ]
       }
-    ],
-    "(dfa)4.": [
+    ]],
+    "(dfa)4.": [[
       {
         type: Syntax.Note,
         number: [ 2, 5, 9 ],
         length: [ 4, 0 ]
       }
-    ],
+    ]],
     "(c4. eg)": new SyntaxError("Unexpected token: '4'"),
     "(fa<ce": new SyntaxError("Unexpected token ILLEGAL"),
     "(ceg) 4": new SyntaxError("Unexpected token: '4'"),
-    "r": [
+    "r": [[
       {
         type: Syntax.Note,
         number: [],
         length: [ null ]
       }
-    ],
-    "r4": [
+    ]],
+    "r4": [[
       {
         type: Syntax.Note,
         number: [],
         length: [ 4 ]
       }
-    ],
-    "r4. ^8": [
+    ]],
+    "r4. ^8": [[
       {
         type: Syntax.Note,
         number: [],
         length: [ 4, 0, 8 ]
       }
-    ],
+    ]],
     "r 4": new SyntaxError("Unexpected token: '4'"),
-    "o": [
+    "o": [[
       {
         type: Syntax.Octave,
         value: 5
       }
-    ],
-    "o4": [
+    ]],
+    "o4": [[
       {
         type: Syntax.Octave,
         value: 4
       }
-    ],
+    ]],
     "o 4": new SyntaxError("Unexpected token: '4'"),
-    ">> <": [
+    ">> <": [[
       {
         type: Syntax.OctaveShift,
         direction: -1,
@@ -150,72 +150,72 @@ describe("parse", function() {
         direction: +1,
         value: 1
       }
-    ],
-    "<2": [
+    ]],
+    "<2": [[
       {
         type: Syntax.OctaveShift,
         direction: +1,
         value: 2
       }
-    ],
+    ]],
     "> 4": new SyntaxError("Unexpected token: '4'"),
-    "l": [
+    "l": [[
       {
         type: Syntax.Length,
         length: [ 4 ]
       }
-    ],
-    "l4": [
+    ]],
+    "l4": [[
       {
         type: Syntax.Length,
         length: [ 4 ]
       }
-    ],
-    "l4. ^8": [
+    ]],
+    "l4. ^8": [[
       {
         type: Syntax.Length,
         length: [ 4, 0, 8 ]
       }
-    ],
-    "l8^^": [
+    ]],
+    "l8^^": [[
       {
         type: Syntax.Length,
         length: [ 8, null, null ]
       }
-    ],
+    ]],
     "l 4": new SyntaxError("Unexpected token: '4'"),
-    "q": [
+    "q": [[
       {
         type: Syntax.Quantize,
         value: 6
       }
-    ],
-    "q2": [
+    ]],
+    "q2": [[
       {
         type: Syntax.Quantize,
         value: 2
       }
-    ],
+    ]],
     "q 4": new SyntaxError("Unexpected token: '4'"),
-    "t": [
+    "t": [[
       {
         type: Syntax.Tempo,
         value: 120
       }
-    ],
-    "t125.5": [
+    ]],
+    "t125.5": [[
       {
         type: Syntax.Tempo,
         value: 125.5
       }
-    ],
+    ]],
     "t 120": new SyntaxError("Unexpected token: '1'"),
-    "$": [
+    "$": [[
       {
         type: Syntax.InfLoop
       }
-    ],
-    "[a]": [
+    ]],
+    "[a]": [[
       {
         type: Syntax.LoopBegin,
         value: 2
@@ -228,8 +228,8 @@ describe("parse", function() {
       {
         type: Syntax.LoopEnd
       }
-    ],
-    "[c|d]": [
+    ]],
+    "[c|d]": [[
       {
         type: Syntax.LoopBegin,
         value: 2
@@ -250,8 +250,8 @@ describe("parse", function() {
       {
         type: Syntax.LoopEnd
       }
-    ],
-    "[c|d]4": [
+    ]],
+    "[c|d]4": [[
       {
         type: Syntax.LoopBegin,
         value: 4
@@ -272,8 +272,8 @@ describe("parse", function() {
       {
         type: Syntax.LoopEnd
       }
-    ],
-    "[ c [ d [ e ] ] | f ]4": [
+    ]],
+    "[ c [ d [ e ] ] | f ]4": [[
       {
         type: Syntax.LoopBegin,
         value: 4
@@ -318,11 +318,32 @@ describe("parse", function() {
       {
         type: Syntax.LoopEnd
       }
-    ],
+    ]],
     "[": new SyntaxError("Unexpected token ILLEGAL"),
     "]": new SyntaxError("Unexpected token: ']'"),
     "|": new SyntaxError("Unexpected token: '|'"),
-    "[c] 4": new SyntaxError("Unexpected token: '4'")
+    "[c] 4": new SyntaxError("Unexpected token: '4'"),
+    "c; e; g;": [
+      [
+        {
+          type: Syntax.Note,
+          number: [ 0 ],
+          length: [ null ]
+        }
+      ], [
+        {
+          type: Syntax.Note,
+          number: [ 4 ],
+          length: [ null ]
+        }
+      ], [
+        {
+          type: Syntax.Note,
+          number: [ 7 ],
+          length: [ null ]
+        },
+      ]
+    ]
   };
 
   Object.keys(testCase).forEach(function(mml) {

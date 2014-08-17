@@ -1,7 +1,6 @@
 "use strict";
 
 var Sequencer = require("../src/sequencer");
-var MML = require("../src/mml");
 
 describe("sequencer", function() {
   it("should work", function() {
@@ -14,7 +13,7 @@ describe("sequencer", function() {
 
   it("timeline", function() {
     var audioContext = new AudioContextShim();
-    var sequencer = new Sequencer(audioContext, "cege", "l8>ccccdddd");
+    var sequencer = new Sequencer(audioContext, "cege; l8>ccccdddd");
 
     var timeline = [];
 

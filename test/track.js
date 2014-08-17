@@ -1,21 +1,15 @@
 "use strict";
 
-var MML = require("../src/mml");
+var parse   = require("../src/parse");
+var compile = require("../src/compile");
+var Track   = require("../src/track");
 
-describe("mml", function() {
-
-  it("create instance", function() {
-    var mml = new MML("");
-
-    expect(mml).to.be.instanceOf(MML);
-
-    expect(new MML(mml)).to.equal(mml);
-  });
+describe("track", function() {
 
   it("timeline", function() {
     var timeline = [];
 
-    var mml = new MML("cd l8 efg(ab)")
+    var mml = new Track(compile(parse("cd l8 efg(ab)")[0]))
       .on("note", function(when, midi, duration, noteOff) {
         noteOff(function(when) {
           timeline.push([ when, "nOFF", midi ]);

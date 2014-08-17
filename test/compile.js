@@ -1,7 +1,7 @@
 "use strict";
 
 var compile = require("../src/compile");
-var parse = require("../src/parse");
+var parse   = require("../src/parse");
 var Emitter = require("../src/emitter");
 
 function toComparable(args) {
@@ -22,9 +22,6 @@ function duration(tempo, len, dot, quantize) {
 
 describe("compile", function() {
   var testCase = {
-    "": [
-      [ "end", 0 ],
-    ],
     "ceg": [
       [ "note", 0, 72, duration(120, 4, 0, 6), "<function>", 0 ],
       [ "note", 1, 76, duration(120, 4, 0, 6), "<function>", 0 ],
@@ -141,7 +138,7 @@ describe("compile", function() {
         passed.push([ "end" ].concat(toComparable(arguments)));
       });
 
-      var compiled = compile(parse(mml));
+      var compiled = compile(parse(mml)[0]);
 
       while (state.index < compiled.length && when < 16) {
         compiled[state.index](when, state);
