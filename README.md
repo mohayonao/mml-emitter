@@ -34,8 +34,7 @@ function toneGenerator(when, midi, duration, noteOff) {
 
   osc.frequency.value = midicps(midi);
   osc.type = "triangle";
-  amp.gain.setValueAtTime(0.5, when);
-  amp.gain.linearRampToValueAtTime(0.4, when + duration * 0.75);
+  amp.gain.setValueAtTime(0.25, when);
   amp.gain.linearRampToValueAtTime(0.0, when + duration);
 
   osc.start(when);
@@ -44,10 +43,12 @@ function toneGenerator(when, midi, duration, noteOff) {
 
   noteOff(function() {
     amp.disconnect();
-  }, 0.1); // called after noteOff + 0.1sec
+  }, 0.1); // called after 'duration' + 0.1sec
 }
 
-var sequencer = new wamml.Sequencer(audioContext, "t120 l8 cdef gab<c >");
+var sequencer = new wamml.Sequencer(
+  audioContext, "t100 l8 cege (>eg<c)2"
+);
 
 sequencer.tracks[0].on("note", toneGenerator);
 
@@ -61,7 +62,12 @@ sequencer.start();
 `;` splits tracks.
 
 ```javascript
-var sequencer = new wamml.Sequencer(audioContext, "t120 l8 cdef gab<c >; t120 l8 gab<c defg >");
+var sequencer = new wamml.Sequencer(
+  audioContext, [
+    "l8 erer edef grgg e2 d4de ffed crcc c2",
+    "l2 q8 c>bab- fg+ a8e-8f8g+8 a2"
+  ].join(";")
+);
 
 sequencer.tracks[0].on("note", noteOnFunction0);
 sequencer.tracks[1].on("note", noteOnFunction1);
@@ -71,13 +77,18 @@ sequencer.start();
 
 #### Directives
 
-this feature has not implemented yet.
+:zap: this feature has not implemented yet.
 
 ```javascript
-var sequencer = new wamml.Sequencer(audioContext, "t{{ tempo }} l{{ len }} cdef gab<c >");
+var sequencer = new wamml.Sequencer(
+  audioContext, "t{{ $tempo }} l{{ len }} cdef gab<c >"
+);
 
+// if starts with '$', it is a shared variable for all tracks
 sequencer.tracks[0].tempo = 120;
-sequencer.tracks[0].len   =   8;
+
+// else, it is a variable for the specified track.
+sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
 ```
 
 ## Syntax
@@ -92,8 +103,10 @@ sequencer.tracks[0].len   =   8;
     - rest (1-1920, default: l)
   - **o**_[number]_
     - octave (0-9, default: 5)
-  - [**<>**]_[number]_
-    - octave shift (1-9, default: 1)
+  - **<**_[number]_
+    - octave up (1-9, default: 1)
+  - **>**_[number]_
+    - octave down (1-9, default: 1)
 
 ###### Duration
 
@@ -111,9 +124,10 @@ sequencer.tracks[0].len   =   8;
   - **$**
     - infinite loop
   - **[** ... **|** ... **]**_[number]_
-    - loop
+    - loop  (1-999, default: 2)
+    - commands after `|` are skipped in last loop
   - **;**
-    - separate tracks
+    - track separator
 
 ###### Programming
 
