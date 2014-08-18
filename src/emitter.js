@@ -27,9 +27,9 @@ Emitter.prototype.addListener = Emitter.prototype.on;
 
 Emitter.prototype.once = function(event, listener) {
 
-  function fn() {
+  function fn(arg) {
     this.off(event, fn);
-    listener.apply(this, arguments);
+    listener.call(this, arg);
   }
 
   fn.listener = listener;
@@ -60,11 +60,9 @@ Emitter.prototype.removeListener = Emitter.prototype.off;
 
 Emitter.prototype.removeAllListeners = Emitter.prototype.off;
 
-Emitter.prototype.emit = function(event) {
-  var args = [].slice.call(arguments, 1);
-
+Emitter.prototype.emit = function(event, arg) {
   this.listeners(event).forEach(function(fn) {
-    fn.apply(this, args);
+    fn.call(this, arg);
   }, this);
 };
 

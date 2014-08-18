@@ -55,7 +55,7 @@ Sequencer.prototype.onmessage = function(message) {
   if (message && message.type === "end") {
     this._ended += 1;
     if (this.tracks.length <= this._ended) {
-      this.emit("end", message.args[0]);
+      this.emit("end", message);
     }
   }
 };
