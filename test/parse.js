@@ -215,7 +215,7 @@ describe("parse", function() {
         type: Syntax.InfLoop
       }
     ]],
-    "[a]": [[
+    "/: a :/": [[
       {
         type: Syntax.LoopBegin,
         value: 2
@@ -229,7 +229,7 @@ describe("parse", function() {
         type: Syntax.LoopEnd
       }
     ]],
-    "[c|d]": [[
+    "/: c |d :/": [[
       {
         type: Syntax.LoopBegin,
         value: 2
@@ -251,7 +251,7 @@ describe("parse", function() {
         type: Syntax.LoopEnd
       }
     ]],
-    "[c|d]4": [[
+    "/: c| d :/4": [[
       {
         type: Syntax.LoopBegin,
         value: 4
@@ -273,7 +273,7 @@ describe("parse", function() {
         type: Syntax.LoopEnd
       }
     ]],
-    "[ c [ d [ e ] ] | f ]4": [[
+    "/: c /: d /: e :/ :/ | f :/4": [[
       {
         type: Syntax.LoopBegin,
         value: 4
@@ -319,10 +319,10 @@ describe("parse", function() {
         type: Syntax.LoopEnd
       }
     ]],
-    "[": new SyntaxError("Unexpected token ILLEGAL"),
-    "]": new SyntaxError("Unexpected token: ']'"),
+    "/:": new SyntaxError("Unexpected token ILLEGAL"),
+    ":/": new SyntaxError("Unexpected token: ':'"),
     "|": new SyntaxError("Unexpected token: '|'"),
-    "[c] 4": new SyntaxError("Unexpected token: '4'"),
+    "/:c:/ 4": new SyntaxError("Unexpected token: '4'"),
     "c; e; g;": [
       [
         {

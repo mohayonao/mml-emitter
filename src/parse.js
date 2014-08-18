@@ -288,16 +288,18 @@ function parse(scanner) {
   }
 
   function loop() {
-    scanner.expect("[");
+    scanner.expect("/");
+    scanner.expect(":");
 
     var seq = [ { type: Syntax.LoopBegin } ];
 
-    until(/\||\]/, function() {
+    until(/[|:]/, function() {
       append(seq, advance());
     });
     append(seq, loopExit());
 
-    scanner.expect("]");
+    scanner.expect(":");
+    scanner.expect("/");
 
     seq.push({ type: Syntax.LoopEnd });
 
@@ -314,7 +316,7 @@ function parse(scanner) {
 
       seq.push({ type: Syntax.LoopExit });
 
-      until("]", function() {
+      until(":", function() {
         append(seq, advance());
       });
     }
@@ -344,7 +346,7 @@ function parse(scanner) {
       return t();
     case "$":
       return infLoop();
-    case "[":
+    case "/":
       return loop();
     }
     scanner.throwUnexpectedToken();
