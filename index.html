@@ -44,10 +44,9 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.4.0/codemirror.min.js"></script>
     <script src="build/wamml.min.js"></script>
     <script>
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
     $(function() {
       "use strict";
-
-      var AudioContext = window.AudioContext || window.webkitAudioContext;
 
       var sequencer = null;
       var audioContext = new AudioContext();
@@ -111,8 +110,8 @@
         }
       });
 
-      function midicps(num) {
-        return 440 * Math.pow(2, (num - 69) * 1 / 12);
+      function midicps(midi) {
+        return 440 * Math.pow(2, (midi - 69) * 1 / 12);
       }
 
       function toneGenerator(when, midi, duration, noteOff) {
@@ -121,9 +120,10 @@
 
         osc.frequency.value = midicps(midi);
         osc.type = "triangle";
-        amp.gain.setValueAtTime(0.5, when);
-        amp.gain.linearRampToValueAtTime(0.4, when + duration * 0.75);
-        amp.gain.linearRampToValueAtTime(0.0, when + duration);
+        amp.gain.setValueAtTime(0.00, when);
+        amp.gain.linearRampToValueAtTime(0.25, when + 0.005);
+        amp.gain.linearRampToValueAtTime(0.20, when + duration * 0.75);
+        amp.gain.linearRampToValueAtTime(0.00, when + duration);
 
         osc.start(when);
         osc.connect(amp);
