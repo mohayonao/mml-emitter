@@ -28,29 +28,30 @@ function midicps(midi) {
   return 440 * Math.pow(2, (midi - 69) * 1 / 12);
 }
 
-function toneGenerator(when, midi, duration, noteOff) {
-  var osc = audioContext.createOscillator();
-  var amp = audioContext.createGain();
+function noteEventHandler(e) {
+  var osc  = audioContext.createOscillator();
+  var amp  = audioContext.createGain();
+  var when = e.when;
 
-  osc.frequency.value = midicps(midi);
+  osc.frequency.value = midicps(e.midi);
   osc.type = "triangle";
   amp.gain.setValueAtTime(0.25, when);
-  amp.gain.linearRampToValueAtTime(0.0, when + duration);
+  amp.gain.linearRampToValueAtTime(0.0, when + e.duration);
 
   osc.start(when);
   osc.connect(amp);
   amp.connect(audioContext.destination);
 
-  noteOff(function() {
+  e.noteOff(function() {
     amp.disconnect();
-  }, 0.1); // called after 'duration' + 0.1sec
+  }, 0.1); // called after 'e.duration' + 0.1sec
 }
 
 var sequencer = new wamml.Sequencer(
   audioContext, "t100 l8 cege (>eg<c)2"
 );
 
-sequencer.tracks[0].on("note", toneGenerator);
+sequencer.tracks[0].on("note", noteEventHandler);
 
 sequencer.start();
 ```
@@ -69,8 +70,8 @@ var sequencer = new wamml.Sequencer(
   ].join(";")
 );
 
-sequencer.tracks[0].on("note", noteOnFunction0);
-sequencer.tracks[1].on("note", noteOnFunction1);
+sequencer.tracks[0].on("note", noteEventHandler0);
+sequencer.tracks[1].on("note", noteEventHandler1);
 
 sequencer.start();
 ```
@@ -159,7 +160,7 @@ sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
 
 ###### Events
 
-  - `"end" : (when:number)`
+  - `"end" : ({ when:number })`
 
 ### MMLTrack
 
@@ -171,8 +172,8 @@ sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
 
 ###### Events
 
-  - `"note" : (when:number, midi:number, duration:number, noteOff:function, index:number)`
-  - `"end" : (when:number)`
+  - `"note" : ({ when:number, midi:number, duration:number, noteOff:function, chordIndex:number })`
+  - `"end" : ({ when:number })`
 
 ## Contribution
 
