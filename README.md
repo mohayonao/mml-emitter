@@ -48,7 +48,7 @@ function noteEventHandler(e) {
 }
 
 var sequencer = new wamml.Sequencer(
-  audioContext, "t100 l8 cege (>eg<c)2"
+  audioContext, "t100 l8 cege [>eg<c]2"
 );
 
 sequencer.tracks[0].on("note", noteEventHandler);
@@ -98,7 +98,7 @@ sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
 
   - [**a**-**g**][**-+**]?_[number]_**.***
     - note on (1-1920, default: l)
-  - **(** ([**a**-**g**][**-+**]?|[**<>**])+ **)**_[number]_**.***
+  - **[** ([**a**-**g**][**-+**]?|[**<>**])+ **]**_[number]_**.***
     - chord (1-1920, default: l)
   - **r**_[number]_**.***
     - rest (1-1920, default: l)
@@ -124,7 +124,7 @@ sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
     - tempo (1-511, default: 120)
   - **$**
     - infinite loop
-  - **[** ... **|** ... **]**_[number]_
+  - **/:** ... **|** ... **:/**_[number]_
     - loop  (1-999, default: 2)
     - commands after `|` are skipped in last loop
   - **;**

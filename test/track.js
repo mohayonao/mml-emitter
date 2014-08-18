@@ -9,7 +9,7 @@ describe("track", function() {
   it("timeline", function() {
     var timeline = [];
 
-    var mml = new Track(null, compile(parse("cd l8 efg(ab)")[0]))
+    var mml = new Track(null, compile(parse("cd l8 efg[ab]")[0]))
       .on("note", function(e) {
         var midi = e.midi;
 

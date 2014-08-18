@@ -34,7 +34,7 @@ describe("compile", function() {
       [ "note", 2, 79, duration(120, 4, 0, 6) * 3, 0 ],
       [ "end", 3 ],
     ],
-    "( ceg )": [
+    "[ ceg ]": [
       [ "note", 0, 72, duration(120, 4, 0, 6), 0 ],
       [ "note", 0, 76, duration(120, 4, 0, 6), 1 ],
       [ "note", 0, 79, duration(120, 4, 0, 6), 2 ],
@@ -90,7 +90,7 @@ describe("compile", function() {
     ],
     "$": [
     ],
-    "[ ceg ]": [
+    "/: ceg :/": [
       [ "note", 0, 72, duration(120, 4, 0, 6), 0 ],
       [ "note", 1, 76, duration(120, 4, 0, 6), 0 ],
       [ "note", 2, 79, duration(120, 4, 0, 6), 0 ],
@@ -99,7 +99,7 @@ describe("compile", function() {
       [ "note", 5, 79, duration(120, 4, 0, 6), 0 ],
       [ "end", 6 ],
     ],
-    "[ ce|g ]3": [
+    "/: ce |g :/3": [
       [ "note", 0, 72, duration(120, 4, 0, 6), 0 ],
       [ "note", 1, 76, duration(120, 4, 0, 6), 0 ],
       [ "note", 2, 79, duration(120, 4, 0, 6), 0 ],
