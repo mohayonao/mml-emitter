@@ -217,12 +217,12 @@ function parse(scanner) {
   }
 
   function chord() {
-    scanner.expect("(");
+    scanner.expect("[");
 
     var number = [];
     var offset = 0;
 
-    until(")", function() {
+    until("]", function() {
       switch (scanner.peek()) {
       case "c": case "d": case "e": case "f": case "g": case "a": case "b":
         number.push(noteNum(offset));
@@ -240,7 +240,7 @@ function parse(scanner) {
       }
     });
 
-    scanner.expect(")");
+    scanner.expect("]");
 
     return { type: Syntax.Note, number: number, length: length(null) };
   }
@@ -328,7 +328,7 @@ function parse(scanner) {
     switch (scanner.peek()) {
     case "c": case "d": case "e": case "f": case "g": case "a": case "b":
       return note();
-    case "(":
+    case "[":
       return chord();
     case "r":
       return r();

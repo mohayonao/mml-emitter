@@ -68,37 +68,37 @@ describe("parse", function() {
     ]],
     "c 4": new SyntaxError("Unexpected token: '4'"),
     "c4 ^ 8": new SyntaxError("Unexpected token: '8'"),
-    "(ceg)": [[
+    "[ceg]": [[
       {
         type: Syntax.Note,
         number: [ 0, 4, 7 ],
         length: [ null ]
       }
     ]],
-    "( g<ce )": [[
+    "[ g<ce ]": [[
       {
         type: Syntax.Note,
         number: [ 7, 12, 16 ],
         length: [ null ]
       }
     ]],
-    "(c > g e)": [[
+    "[c > g e]": [[
       {
         type: Syntax.Note,
         number: [ 0, -5, -8 ],
         length: [ null ]
       }
     ]],
-    "(dfa)4.": [[
+    "[dfa]4.": [[
       {
         type: Syntax.Note,
         number: [ 2, 5, 9 ],
         length: [ 4, 0 ]
       }
     ]],
-    "(c4. eg)": new SyntaxError("Unexpected token: '4'"),
-    "(fa<ce": new SyntaxError("Unexpected token ILLEGAL"),
-    "(ceg) 4": new SyntaxError("Unexpected token: '4'"),
+    "[c4. eg]": new SyntaxError("Unexpected token: '4'"),
+    "[fa<ce": new SyntaxError("Unexpected token ILLEGAL"),
+    "[ceg] 4": new SyntaxError("Unexpected token: '4'"),
     "r": [[
       {
         type: Syntax.Note,
