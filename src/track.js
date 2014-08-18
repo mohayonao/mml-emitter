@@ -63,19 +63,17 @@ Track.prototype._process = function(currentTime) {
   }
 };
 
-Track.prototype.onmessage = function(message) {
-  switch (message.type) {
-  case "sched":
+Track.prototype.onmessage = function(message, opts) {
+  opts = opts || {};
+
+  if (message.type === "sched") {
     this.sched(message.when, message.callback);
-    break;
-  case "end":
-    this.emit.apply(this, [ message.type ].concat(message.args));
-    if (this._parent && message.type === "end") {
-      this._parent.onmessage(message);
-    }
-    break;
-  default:
-    this.emit.apply(this, [ message.type ].concat(message.args));
+  }
+  if (!opts.private) {
+    this.emit(message.type, message);
+  }
+  if (opts.bubble && this._parent) {
+    this._parent.onmessage(message);
   }
 };
 

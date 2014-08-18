@@ -91,7 +91,7 @@
               this.message = "";
 
               sequencer.tracks.forEach(function(track) {
-                track.on("note", toneGenerator);
+                track.on("note", noteEventHandler);
               });
               sequencer.on("end", function() {
                 vue.stop();
@@ -114,22 +114,23 @@
         return 440 * Math.pow(2, (midi - 69) * 1 / 12);
       }
 
-      function toneGenerator(when, midi, duration, noteOff) {
-        var osc = audioContext.createOscillator();
-        var amp = audioContext.createGain();
+      function noteEventHandler(e) {
+        var osc  = audioContext.createOscillator();
+        var amp  = audioContext.createGain();
+        var when = e.when;
 
-        osc.frequency.value = midicps(midi);
+        osc.frequency.value = midicps(e.midi);
         osc.type = "triangle";
         amp.gain.setValueAtTime(0.00, when);
         amp.gain.linearRampToValueAtTime(0.25, when + 0.005);
-        amp.gain.linearRampToValueAtTime(0.20, when + duration * 0.75);
-        amp.gain.linearRampToValueAtTime(0.00, when + duration);
+        amp.gain.linearRampToValueAtTime(0.20, when + e.duration * 0.75);
+        amp.gain.linearRampToValueAtTime(0.00, when + e.duration);
 
         osc.start(when);
         osc.connect(amp);
         amp.connect(audioContext.destination);
 
-        noteOff(function() {
+        e.noteOff(function() {
           amp.disconnect();
         });
       }

@@ -64,8 +64,8 @@ compile[Syntax.End] = function() {
     } else {
       state.postMessage({
         type: "end",
-        args: [ currentTime ]
-      });
+        when: currentTime
+      }, { bubble: true });
     }
   };
 };
@@ -87,12 +87,16 @@ compile[Syntax.Note] = function(node) {
           type: "sched",
           when: currentTime + duration + (offset || 0),
           callback: fn
-        });
+        }, { private: true });
       }
 
       state.postMessage({
         type: "note",
-        args: [ currentTime, midi, duration, noteOff, index ]
+        when: currentTime,
+        midi: midi,
+        duration: duration,
+        noteOff: noteOff,
+        chordIndex: index
       });
     });
 

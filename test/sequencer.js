@@ -17,20 +17,20 @@ describe("sequencer", function() {
 
     var timeline = [];
 
-    sequencer.tracks[0].on("note", function(when, midi) {
-      timeline.push([ when, "note(0)", midi ]);
-    }).on("end", function(when) {
-      timeline.push([ when, "end(0)" ]);
+    sequencer.tracks[0].on("note", function(e) {
+      timeline.push([ e.when, "note(0)", e.midi ]);
+    }).on("end", function(e) {
+      timeline.push([ e.when, "end(0)" ]);
     });
 
-    sequencer.tracks[1].on("note", function(when, midi) {
-      timeline.push([ when, "note(1)", midi ]);
-    }).on("end", function(when) {
-      timeline.push([ when, "end(1)" ]);
+    sequencer.tracks[1].on("note", function(e) {
+      timeline.push([ e.when, "note(1)", e.midi ]);
+    }).on("end", function(e) {
+      timeline.push([ e.when, "end(1)" ]);
     });
 
-    sequencer.on("end", function(when) {
-      timeline.push([ when, "end(*)" ]);
+    sequencer.on("end", function(e) {
+      timeline.push([ e.when, "end(*)" ]);
     });
 
     sequencer.start();

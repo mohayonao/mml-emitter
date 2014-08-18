@@ -10,15 +10,17 @@ describe("track", function() {
     var timeline = [];
 
     var mml = new Track(null, compile(parse("cd l8 efg(ab)")[0]))
-      .on("note", function(when, midi, duration, noteOff) {
-        noteOff(function(when) {
+      .on("note", function(e) {
+        var midi = e.midi;
+
+        e.noteOff(function(when) {
           timeline.push([ when, "nOFF", midi ]);
         });
 
-        timeline.push([ when, "note", midi ]);
+        timeline.push([ e.when, "note", e.midi ]);
       })
-      .on("end", function(when) {
-        timeline.push([ when, "end" ]);
+      .on("end", function(e) {
+        timeline.push([ e.when, "end" ]);
       });
 
     var currentTime     = 100.0;
