@@ -14,14 +14,14 @@ function sum(a, b) {
   return a + b;
 }
 
-function calcTotalDuration(list, state) {
+function calcTotalDuration(ctx, length) {
   var prev = 0, dotted = 0;
 
-  if (list[0] === null) {
-    list = state.length.concat(list.slice(1));
+  if (length[0] === null) {
+    length = ctx._lenList.concat(length.slice(1));
   }
 
-  return list.map(function(elem) {
+  return length.map(function(elem) {
     if (elem === null) {
       elem = prev;
     } else if (elem === 0) {
@@ -29,68 +29,72 @@ function calcTotalDuration(list, state) {
     } else {
       prev = dotted = elem;
     }
-    return (60 / state.tempo) * (4 / clip(elem, 1, 1920));
+    return (60 / ctx._tempo) * (4 / clip(elem, 1, 1920));
   }).reduce(sum, 0);
 }
 
-function compile(nodes) {
+var compile = {};
+
+function Compiler(track) {
+  this._track = track;
+}
+
+Compiler.prototype.compile = function(nodes) {
   return [].concat({ type: Syntax.Begin }, nodes, { type: Syntax.End })
     .map(function(node, index) {
       return compile[node.type](node, index);
     });
-}
+};
 
 compile[Syntax.Begin] = function() {
-  return function(currentTime, state) {
-    state.tempo    = 120;
-    state.octave   = 5;
-    state.quantize = 6;
-    state.length   = [ 4 ];
-    state.pendings = [];
-    state.loopStack = [];
-    state.infLoopIndex = null;
-    state.infLoopWhen  = currentTime;
+  return function(ctx, currentTime) {
+    ctx._tempo    = 120;
+    ctx._octave   = 5;
+    ctx._quantize = 6;
+    ctx._length   = 4;
+    ctx._lenList  = [ ctx._length ];
+    ctx._loopStack = [];
+    ctx._infLoopIndex = null;
+    ctx._infLoopWhen  = currentTime;
 
     return currentTime;
   };
 };
 
 compile[Syntax.End] = function() {
-  return function(currentTime, state) {
-    if (state.infLoopIndex !== null) {
-      if (state.infLoopWhen !== currentTime) {
-        state.index = state.infLoopIndex;
+  return function(ctx, currentTime) {
+    if (ctx._infLoopIndex !== null) {
+      if (ctx._infLoopWhen !== currentTime) {
+        ctx._index = ctx._infLoopIndex;
       }
     } else {
-      state.postMessage({
+      ctx._recv({
         type: "end",
         when: currentTime
       }, { bubble: true });
     }
+
+    return currentTime;
   };
 };
 
 compile[Syntax.Note] = function(node) {
-  return function(currentTime, state) {
-    state.pendings.splice(0).forEach(function(fn) {
-      fn(state);
-    });
-
-    var totalDuration = calcTotalDuration(node.length, state);
-    var duration = totalDuration * (state.quantize / 8);
+  return function(ctx, currentTime) {
+    var totalDuration = calcTotalDuration(ctx, node.length);
+    var duration = totalDuration * (ctx._quantize / 8);
 
     node.number.forEach(function(number, index) {
-      var midi = state.octave * 12 + number + 12;
+      var midi = ctx._octave * 12 + number + 12;
 
       function noteOff(fn, offset) {
-        state.postMessage({
+        ctx._recv({
           type: "sched",
           when: currentTime + duration + (offset || 0),
           callback: fn
         }, { private: true });
       }
 
-      state.postMessage({
+      ctx._recv({
         type: "note",
         when: currentTime,
         midi: midi,
@@ -105,74 +109,80 @@ compile[Syntax.Note] = function(node) {
 };
 
 compile[Syntax.Octave] = function(node) {
-  return function(currentTime, state) {
-    state.pendings.push(function(state) {
-      state.octave = clip(node.value, 0, 8);
-    });
+  return function(ctx, currentTime) {
+    ctx._octave = clip(node.value, 0, 8);
+
+    return currentTime;
   };
 };
 
 compile[Syntax.OctaveShift] = function(node) {
-  return function(currentTime, state) {
-    state.pendings.push(function(state) {
-      var octave = state.octave + node.direction * node.value;
-      state.octave = clip(octave, 0, 8);
-    });
+  return function(ctx, currentTime) {
+    var octave = ctx._octave + node.direction * node.value;
+    ctx._octave = clip(octave, 0, 8);
+    return currentTime;
   };
 };
 
 compile[Syntax.Length] = function(node) {
-  return function(currentTime, state) {
-    state.pendings.push(function(state) {
-      state.length = node.length;
-    });
+  return function(ctx, currentTime) {
+    ctx._length  = node.length[0];
+    ctx._lenList = node.length;
+
+    return currentTime;
   };
 };
 
 compile[Syntax.Quantize] = function(node) {
-  return function(currentTime, state) {
-    state.pendings.push(function(state) {
-      state.quantize = clip(node.value, 0, 8);
-    });
+  return function(ctx, currentTime) {
+    ctx._quantize = clip(node.value, 0, 8);
+
+    return currentTime;
   };
 };
 
 compile[Syntax.Tempo] = function(node) {
-  return function(currentTime, state) {
-    state.pendings.push(function(state) {
-      state.tempo = clip(node.value, 1, 511);
-    });
+  return function(ctx, currentTime) {
+    ctx._tempo = clip(node.value, 1, 511);
+
+    return currentTime;
   };
 };
 
 compile[Syntax.InfLoop] = function(node, index) {
-  return function(currentTime, state) {
-    state.infLoopIndex = index;
-    state.infLoopWhen  = currentTime;
+  return function(ctx, currentTime) {
+    ctx._infLoopIndex = index;
+    ctx._infLoopWhen  = currentTime;
+
+    return currentTime;
   };
 };
 
 compile[Syntax.LoopBegin] = function(node, index) {
-  return function(currentTime, state) {
-    state.loopStack.push([
+  return function(ctx, currentTime) {
+    ctx._loopStack.push([
       clip(node.value, 1, 999), index, null
     ]);
+
+    return currentTime;
   };
 };
 
 compile[Syntax.LoopExit] = function() {
-  return function(currentTime, state) {
-    var looper = peek(state.loopStack);
+  return function(ctx, currentTime) {
+    var looper = peek(ctx._loopStack);
 
     if (looper[0] <= 1 && looper[2] !== null) {
-      state.index = looper[2];
+      ctx._index = looper[2];
     }
+
+    return currentTime;
   };
 };
 
 compile[Syntax.LoopEnd] = function(node, index) {
-  return function(currentTime, state) {
-    var looper = peek(state.loopStack);
+  return function(ctx, currentTime) {
+    var looper = peek(ctx._loopStack);
 
     if (looper[2] === null) {
       looper[2] = index;
@@ -181,13 +191,13 @@ compile[Syntax.LoopEnd] = function(node, index) {
     looper[0] -= 1;
 
     if (looper[0] > 0) {
-      state.index = looper[1];
+      ctx._index = looper[1];
     } else {
-      state.loopStack.pop();
+      ctx._loopStack.pop();
     }
+
+    return currentTime;
   };
 };
 
-module.exports.compile = function(nodes) {
-  return compile(nodes);
-};
+module.exports = Compiler;
