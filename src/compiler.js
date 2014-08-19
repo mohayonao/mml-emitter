@@ -188,6 +188,6 @@ compile[Syntax.LoopEnd] = function(node, index) {
   };
 };
 
-module.exports = function(nodes) {
+module.exports.compile = function(nodes) {
   return compile(nodes);
 };

@@ -1,6 +1,6 @@
 "use strict";
 
-var parse = require("../src/parse");
+var MMLParser = require("../src/mml-parser");
 var Syntax = require("../src/syntax");
 
 describe("parse", function() {
@@ -350,12 +350,12 @@ describe("parse", function() {
     if (testCase[mml] instanceof Error) {
       it("'" + CR(mml) + "' throws " + testCase[mml].message, function() {
         expect(function() {
-          parse(mml);
+          MMLParser.parse(mml);
         }).throw(testCase[mml].constructor, testCase[mml].message);
       });
     } else {
       it("'" + CR(mml) + "'", function() {
-        expect(parse(mml)).to.eql(testCase[mml]);
+        expect(MMLParser.parse(mml)).to.eql(testCase[mml]);
       });
     }
   });

@@ -1,7 +1,7 @@
 "use strict";
 
-var compile = require("../src/compile");
-var parse   = require("../src/parse");
+var Compiler = require("../src/compiler");
+var MMLParser = require("../src/mml-parser");
 var Emitter = require("../src/emitter");
 
 function duration(tempo, len, dot, quantize) {
@@ -133,7 +133,7 @@ describe("compile", function() {
         passed.push([ "end", e.when ]);
       });
 
-      var compiled = compile(parse(mml)[0]);
+      var compiled = Compiler.compile(MMLParser.parse(mml)[0]);
 
       while (state.index < compiled.length && when < 16) {
         compiled[state.index](when, state);
