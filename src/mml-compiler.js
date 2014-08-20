@@ -179,7 +179,7 @@ compile[Syntax.Tempo] = function(node) {
 
 compile[Syntax.Velocity] = function(node) {
   return function(ctx, currentTime) {
-    ctx.velocity = clip(valueOf(ctx, node.value, 12), 0, 16);
+    ctx._velocity = clip(valueOf(ctx, node.value, 12), 0, 16);
 
     return currentTime;
   };
