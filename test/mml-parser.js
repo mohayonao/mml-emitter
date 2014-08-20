@@ -210,6 +210,13 @@ describe("parse", function() {
       }
     ]],
     "t 120": new SyntaxError("Unexpected token: '1'"),
+    "v2": [[
+      {
+        type: Syntax.Velocity,
+        value: 2
+      }
+    ]],
+    "v 4": new SyntaxError("Unexpected token: '4'"),
     "$": [[
       {
         type: Syntax.InfLoop

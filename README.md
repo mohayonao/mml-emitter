@@ -124,6 +124,8 @@ mml.tracks[0].doSomething = function() {
 
   - **t**_[number]_
     - tempo (1-511, default: 120)
+  - **v**_[number]_
+    - velocity (0-16, default: 12)
   - **$**
     - infinite loop
   - **/:** ... **|** ... **:/**_[number]_
@@ -183,6 +185,7 @@ mml.tracks[0].doSomething = function() {
     - `duration:number`
     - `noteOff:function`
     - `chordIndex:number`
+    - `velocity:number`
   - `"end" : (event:object)->`
     - `when:number`
 

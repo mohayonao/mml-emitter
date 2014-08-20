@@ -89,6 +89,9 @@ describe("MMLCompiler", function() {
         [ "note", 14, 79, duration(120, 4, 0, 6), 0 ],
         [ "note", 15, 76, duration(120, 4, 0, 6), 0 ],
       ],
+      "v8": [
+        [ "end", 0 ],
+      ],
       "$": [
       ],
       "/: ceg :/": [

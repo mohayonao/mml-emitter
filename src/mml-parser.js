@@ -152,6 +152,12 @@ function parse(scanner) {
     return { type: Syntax.Tempo, value: arg(/\d+(\.\d+)?/) };
   }
 
+  function v() {
+    scanner.expect("v");
+
+    return { type: Syntax.Velocity, value: arg(/\d+/) };
+  }
+
   function infLoop() {
     scanner.expect("$");
 
@@ -241,6 +247,8 @@ function parse(scanner) {
       return q();
     case "t":
       return t();
+    case "v":
+      return v();
     case "$":
       return infLoop();
     case "/":
