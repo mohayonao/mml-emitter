@@ -13,7 +13,7 @@
   </head>
   <body>
     <div class="container">
-      <h1>MMLEmitter</h1>
+      <h1 id="title">MMLEmitter</h1>
       <p>MMLEmitter is a MML(Music Macro Language) event sequencer based on Web Audio API.</p>
       <div id="app">
         <div class="row">
@@ -53,6 +53,7 @@
       var editor = CodeMirror(document.getElementById("editor"), {
         lineNumbers: true,
       });
+      var $title = $("#title");
 
       var vue = new Vue({
         el: "#app",
@@ -82,10 +83,16 @@
             } catch (e) {
               mml = null;
               this.message = e.message;
-              editor.focus();
-              editor.setCursor({ line: e.lineNumber - 1, ch: e.column - 1 });
+              if (e.lineNumber && e.column) {
+                editor.focus();
+                editor.setCursor({ line: e.lineNumber - 1, ch: e.column - 1 });
+              }
               throw e;
             }
+
+            mml.blink = function(color) {
+              $title.css("color", color);
+            };
 
             if (mml) {
               this.message = "";
@@ -105,6 +112,7 @@
             if (mml) {
               mml.stop();
             }
+            $title.css("color", "inherit");
             this.isPlaying = false;
           }
         }
@@ -118,13 +126,15 @@
         var osc  = audioContext.createOscillator();
         var amp  = audioContext.createGain();
         var when = e.when;
+        var gain1 = 0.4 * (e.velocity / 16);
+        var gain2 = gain1 * 0.8;
 
         osc.frequency.value = midicps(e.midi);
-        osc.type = "triangle";
+        osc.type = this.wave || "triangle";
         amp.gain.setValueAtTime(0.00, when);
-        amp.gain.linearRampToValueAtTime(0.25, when + 0.005);
-        amp.gain.linearRampToValueAtTime(0.20, when + e.duration * 0.75);
-        amp.gain.linearRampToValueAtTime(0.00, when + e.duration);
+        amp.gain.linearRampToValueAtTime(gain1, when + 0.005);
+        amp.gain.linearRampToValueAtTime(gain2, when + e.duration * 0.75);
+        amp.gain.linearRampToValueAtTime(0.00 , when + e.duration);
 
         osc.start(when);
         osc.connect(amp);
