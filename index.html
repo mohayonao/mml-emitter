@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>wamml</title>
+    <title>MMLEmitter</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.4.0/codemirror.min.css">
@@ -13,8 +13,8 @@
   </head>
   <body>
     <div class="container">
-      <h1>wamml</h1>
-      <p>Wamml is a MML sequencer for Web Audio API.</p>
+      <h1>MMLEmitter</h1>
+      <p>MMLEmitter is a MML(Music Macro Language) event sequencer based on Web Audio API.</p>
       <div id="app">
         <div class="row">
           <div class="col-md-9">
@@ -35,20 +35,20 @@
         </div>
       </div>
     </div>
-    <a href="https://github.com/mohayonao/wamml">
+    <a href="https://github.com/mohayonao/MMLEmitter">
       <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png">
     </a>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/vue/0.10.5/vue.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.4.0/codemirror.min.js"></script>
-    <script src="build/wamml.min.js"></script>
+    <script src="build/MMLEmitter.min.js"></script>
     <script>
     var AudioContext = window.AudioContext || window.webkitAudioContext;
     $(function() {
       "use strict";
 
-      var sequencer = null;
+      var mml = null;
       var audioContext = new AudioContext();
       var editor = CodeMirror(document.getElementById("editor"), {
         lineNumbers: true,
@@ -73,37 +73,37 @@
         },
         methods: {
           play: function() {
-            if (sequencer) {
-              sequencer.stop();
+            if (mml) {
+              mml.stop();
             }
 
             try {
-              sequencer = new wamml.Sequencer(audioContext, this.mml);
+              mml = new MMLEmitter(audioContext, this.mml);
             } catch (e) {
-              sequencer = null;
+              mml = null;
               this.message = e.message;
               editor.focus();
               editor.setCursor({ line: e.lineNumber - 1, ch: e.column - 1 });
               throw e;
             }
 
-            if (sequencer) {
+            if (mml) {
               this.message = "";
 
-              sequencer.tracks.forEach(function(track) {
+              mml.tracks.forEach(function(track) {
                 track.on("note", noteEventHandler);
               });
-              sequencer.on("end", function() {
+              mml.on("end", function() {
                 vue.stop();
               });
-              sequencer.start();
+              mml.start();
 
               this.isPlaying = true;
             }
           },
           stop: function() {
-            if (sequencer) {
-              sequencer.stop();
+            if (mml) {
+              mml.stop();
             }
             this.isPlaying = false;
           }

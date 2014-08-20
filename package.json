@@ -1,16 +1,18 @@
 {
-  "name": "wamml",
-  "description": "Wamml is a MML sequencer for Web Audio API",
+  "name": "MMLEmitter",
+  "description": "MML(Music Macro Language) event sequencer based on Web Audio API",
   "version": "0.1.1",
   "author": "Nao Yonamine <mohayonao@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "http://github.com/mohayonao/wamml.git"
+    "url": "http://github.com/mohayonao/MMLEmitter.git"
   },
   "keywords": [
     "mml",
     "music",
+    "sequencer",
+    "event",
     "web audio api"
   ],
   "scripts": {

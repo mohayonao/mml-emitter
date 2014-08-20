@@ -1,24 +1,24 @@
-# wamml
-[![Build Status](http://img.shields.io/travis/mohayonao/wamml.svg?style=flat)](https://travis-ci.org/mohayonao/wamml)
-[![Coverage Status](http://img.shields.io/coveralls/mohayonao/wamml.svg?style=flat)](https://coveralls.io/r/mohayonao/wamml?branch=master)
-[![Dependency Status](http://img.shields.io/david/mohayonao/wamml.svg?style=flat)](https://david-dm.org/mohayonao/wamml)
-[![devDependency Status](http://img.shields.io/david/dev/mohayonao/wamml.svg?style=flat)](https://david-dm.org/mohayonao/wamml)
+# MMLEmitter
+[![Build Status](http://img.shields.io/travis/mohayonao/MMLEmitter.svg?style=flat)](https://travis-ci.org/mohayonao/MMLEmitter)
+[![Coverage Status](http://img.shields.io/coveralls/mohayonao/MMLEmitter.svg?style=flat)](https://coveralls.io/r/mohayonao/MMLEmitter?branch=master)
+[![Dependency Status](http://img.shields.io/david/mohayonao/MMLEmitter.svg?style=flat)](https://david-dm.org/mohayonao/MMLEmitter)
+[![devDependency Status](http://img.shields.io/david/dev/mohayonao/MMLEmitter.svg?style=flat)](https://david-dm.org/mohayonao/MMLEmitter)
 
-> **Wamml** (wáml, ワムル) is a MML sequencer for Web Audio API.
+> **MMLEmitter** is a MML(Music Macro Language) event sequencer based on Web Audio API.
 
 ## Online Playground
 
-  - http://mohayonao.github.io/wamml/
+  - http://mohayonao.github.io/MMLEmitter/
 
 ## Install
 
 ##### browser
 
-  - [wamml.js](http://mohayonao.github.io/wamml/build/wamml.js)
-  - [wamml.min.js](http://mohayonao.github.io/wamml/build/wamml.min.js)
+  - [MMLEmitter.js](http://mohayonao.github.io/MMLEmitter/build/MMLEmitter.js)
+  - [MMLEmitter.min.js](http://mohayonao.github.io/MMLEmitter/build/MMLEmitter.min.js)
 
 ```html
-<script src="/path/to/wamml.js"></script>
+<script src="/path/to/MMLEmitter.js"></script>
 ```
 
 ## Usage
@@ -47,13 +47,13 @@ function noteEventHandler(e) {
   }, 0.1); // called after 'e.duration' + 0.1sec
 }
 
-var sequencer = new wamml.Sequencer(
+var mml = new MMLEmitter(
   audioContext, "t100 l8 cege [>eg<c]2"
 );
 
-sequencer.tracks[0].on("note", noteEventHandler);
+mml.tracks[0].on("note", noteEventHandler);
 
-sequencer.start();
+mml.start();
 ```
 
 ## Features
@@ -63,33 +63,35 @@ sequencer.start();
 `;` splits tracks.
 
 ```javascript
-var sequencer = new wamml.Sequencer(
+var mml = new MMLEmitter(
   audioContext, [
     "l8 erer edef grgg e2 d4de ffed crcc c2",
     "l2 q8 c>bab- fg+ a8e-8f8g+8 a2"
   ].join(";")
 );
 
-sequencer.tracks[0].on("note", noteEventHandler0);
-sequencer.tracks[1].on("note", noteEventHandler1);
+mml.tracks[0].on("note", noteEventHandler0);
+mml.tracks[1].on("note", noteEventHandler1);
 
-sequencer.start();
+mml.start();
 ```
 
 #### Directives
 
-:zap: this feature has not implemented yet.
-
 ```javascript
-var sequencer = new wamml.Sequencer(
-  audioContext, "t{{ $tempo }} l{{ len }} cdef gab<c >"
+var mml = new MMLEmitter(
+  audioContext, "t($tempo) l(len) @(doSomething()) cdef gab<c >"
 );
 
 // if starts with '$', it is a shared variable for all tracks
-sequencer.tracks[0].tempo = 120;
+mml.tempo = 120;
 
 // else, it is a variable for the specified track.
-sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
+mml.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
+
+mml.tracks[0].doSomething = function() {
+  console.log("bang!!");
+};
 ```
 
 ## Syntax
@@ -132,6 +134,8 @@ sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
 
 ###### Programming
 
+  - **@(** ... **)**
+    - execute code
   - **//** ...
     - single line comment
   - **/*** ... **\*/**
@@ -139,19 +143,19 @@ sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
 
 ## API
 
-### Sequencer
+### MMLEmitter
 
 ###### Constructor
 
-  - `new wamml.Sequencer(audioContext:AudioContext, mml:string) : Sequencer`
+  - `new MMLEmitter(audioContext:AudioContext, mml:string) : MMLEmitter`
 
 ###### Methods
 
-  - `on(eventName:string, callback:function) : Sequencer`
-  - `once(eventName:string, callback:function) : Sequencer`
-  - `off(eventName:string, callback:function) : Sequencer`
-  - `start() : Sequencer`
-  - `stop() : Sequencer`
+  - `on(eventName:string, callback:function) : MMLEmitter`
+  - `once(eventName:string, callback:function) : MMLEmitter`
+  - `off(eventName:string, callback:function) : MMLEmitter`
+  - `start() : MMLEmitter`
+  - `stop() : MMLEmitter`
 
 ###### Properties
 
@@ -160,7 +164,8 @@ sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
 
 ###### Events
 
-  - `"end" : ({ when:number })`
+  - `"end" : (event:object)->`
+    - `when:number`
 
 ### MMLTrack
 
@@ -172,12 +177,18 @@ sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
 
 ###### Events
 
-  - `"note" : ({ when:number, midi:number, duration:number, noteOff:function, chordIndex:number })`
-  - `"end" : ({ when:number })`
+  - `"note" : (event:object)->`
+    - `when:number`
+    - `midi:number`
+    - `duration:number`
+    - `noteOff:function`
+    - `chordIndex:number`
+  - `"end" : (event:object)->`
+    - `when:number`
 
 ## Contribution
 
-  1. Fork (https://github.com/mohayonao/wamml/fork)
+  1. Fork (https://github.com/mohayonao/MMLEmitter/fork)
   1. Create a feature branch (`git checkout -b my-new-feature`)
   1. Commit your changes (`git commit -am 'add some feature'`)
   1. Run test suite with the `gulp travis` command and confirm that it passes
@@ -186,4 +197,4 @@ sequencer.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
 
 ## License
 
-Wamml is available under the The MIT License.
+MMLEmitter is available under the The MIT License.

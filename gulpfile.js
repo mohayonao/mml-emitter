@@ -32,15 +32,15 @@ gulp.task("cover", function() {
 
 gulp.task("build", function() {
   gulp.src("index.js")
-    /* wamml.js */
+    /* MMLEmitter.js */
     .pipe(browerify({
-      standalone: "wamml"
+      standalone: "MMLEmitter"
     }))
-    .pipe(rename("wamml.js"))
+    .pipe(rename("MMLEmitter.js"))
     .pipe(gulp.dest("build"))
-    /* wamml.min.js */
+    /* MMLEmitter.min.js */
     .pipe(uglify())
-    .pipe(rename("wamml.min.js"))
+    .pipe(rename("MMLEmitter.min.js"))
     .pipe(gulp.dest("build"));
 });
 
