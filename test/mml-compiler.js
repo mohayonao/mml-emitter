@@ -15,7 +15,7 @@ function duration(tempo, len, dot, quantize) {
 }
 
 describe("MMLCompiler", function() {
-  describe("compile", function() {
+  describe(".compile(ctx, nodes)", function() {
     var testCase = {
       "ceg": [
         [ "note", 0, 72, duration(120, 4, 0, 6), 0 ],

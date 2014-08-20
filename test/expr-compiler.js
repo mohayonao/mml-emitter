@@ -3,7 +3,7 @@
 var ExprCompiler = require("../src/expr-compiler");
 
 describe("ExprCompiler", function() {
-  describe("compile", function() {
+  describe(".compile(ctx, expr)", function() {
 
     it("should return an object that is executable with .valueOf()", function() {
       var expr = ExprCompiler.compile({}, {

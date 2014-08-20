@@ -2,7 +2,7 @@
 
 var Emitter = require("../src/emitter");
 
-describe("emitter", function() {
+describe("Emitter", function() {
   var emitter = null;
 
   beforeEach(function() {

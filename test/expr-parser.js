@@ -4,7 +4,7 @@ var ExprParser = require("../src/expr-parser");
 var Scanner = require("../src/scanner");
 
 describe("ExprParser", function() {
-  describe(".parse", function() {
+  describe(".parse(scanner)", function() {
     var testCase = {
       "100.0": {
         expr: "100.0",
