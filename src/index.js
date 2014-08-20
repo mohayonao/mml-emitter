@@ -2,6 +2,6 @@
 
 var MMLEmitter = require("./mml-emitter");
 
-MMLEmitter.version = "0.1.1";
+MMLEmitter.version = "0.2.0";
 
 module.exports = MMLEmitter;
