@@ -1,5 +1,6 @@
 "use strict";
 
+var ExprCompiler = require("./expr-compiler");
 var Syntax = require("./syntax");
 
 function peek(list) {
@@ -14,8 +15,16 @@ function sum(a, b) {
   return a + b;
 }
 
+function valueOf(ctx, value, defaultVal) {
+  if (value !== null) {
+    value = value.valueOf(ctx);
+  }
+  return value === null ? defaultVal : value;
+}
+
 function calcTotalDuration(ctx, length) {
-  var prev = 0, dotted = 0;
+  var prev = null;
+  var dotted = 0;
 
   if (length[0] === null) {
     length = ctx._lenList.concat(length.slice(1));
@@ -29,22 +38,37 @@ function calcTotalDuration(ctx, length) {
     } else {
       prev = dotted = elem;
     }
-    return (60 / ctx._tempo) * (4 / clip(elem, 1, 1920));
+    return (60 / ctx._tempo) * (4 / clip(valueOf(ctx, elem, 4), 1, 1920));
   }).reduce(sum, 0);
 }
 
-var compile = {};
+function precompile(ctx, node) {
+  if (node && typeof node === "object") {
+    if (node.type === Syntax.Expression) {
+      return ExprCompiler.compile(ctx, node);
+    }
 
-function Compiler(track) {
-  this._track = track;
+    if (Array.isArray(node)) {
+      return node.map(function(node) {
+        return precompile(ctx, node);
+      });
+    }
+
+    Object.keys(node).forEach(function(key) {
+      node[key] = precompile(ctx, node[key]);
+    });
+  }
+
+  return node;
 }
 
-Compiler.prototype.compile = function(nodes) {
+function compile(track, nodes) {
   return [].concat({ type: Syntax.Begin }, nodes, { type: Syntax.End })
     .map(function(node, index) {
+      node = precompile(track, node);
       return compile[node.type](node, index);
     });
-};
+}
 
 compile[Syntax.Begin] = function() {
   return function(ctx, currentTime) {
@@ -110,7 +134,7 @@ compile[Syntax.Note] = function(node) {
 
 compile[Syntax.Octave] = function(node) {
   return function(ctx, currentTime) {
-    ctx._octave = clip(node.value, 0, 8);
+    ctx._octave = clip(valueOf(ctx, node.value, 5), 0, 8);
 
     return currentTime;
   };
@@ -118,7 +142,7 @@ compile[Syntax.Octave] = function(node) {
 
 compile[Syntax.OctaveShift] = function(node) {
   return function(ctx, currentTime) {
-    var octave = ctx._octave + node.direction * node.value;
+    var octave = ctx._octave + node.direction * valueOf(ctx, node.value, 1);
     ctx._octave = clip(octave, 0, 8);
     return currentTime;
   };
@@ -135,7 +159,7 @@ compile[Syntax.Length] = function(node) {
 
 compile[Syntax.Quantize] = function(node) {
   return function(ctx, currentTime) {
-    ctx._quantize = clip(node.value, 0, 8);
+    ctx._quantize = clip(valueOf(ctx, node.value, 6), 0, 8);
 
     return currentTime;
   };
@@ -143,7 +167,7 @@ compile[Syntax.Quantize] = function(node) {
 
 compile[Syntax.Tempo] = function(node) {
   return function(ctx, currentTime) {
-    ctx._tempo = clip(node.value, 1, 511);
+    ctx._tempo = clip(valueOf(ctx, node.value, 120), 1, 511);
 
     return currentTime;
   };
@@ -161,7 +185,7 @@ compile[Syntax.InfLoop] = function(node, index) {
 compile[Syntax.LoopBegin] = function(node, index) {
   return function(ctx, currentTime) {
     ctx._loopStack.push([
-      clip(node.value, 1, 999), index, null
+      clip(valueOf(ctx, node.value, 2), 1, 999), index, null
     ]);
 
     return currentTime;
@@ -200,4 +224,11 @@ compile[Syntax.LoopEnd] = function(node, index) {
   };
 };
 
-module.exports = Compiler;
+compile[Syntax.Command] = function(node) {
+  return function(ctx, currentTime) {
+    valueOf(ctx, node.value, 0);
+    return currentTime;
+  };
+};
+
+module.exports.compile = compile;

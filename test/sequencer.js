@@ -13,7 +13,9 @@ describe("sequencer", function() {
 
   it("timeline", function() {
     var audioContext = new AudioContextShim();
-    var sequencer = new Sequencer(audioContext, "cege; l8>ccccdddd");
+    var sequencer = new Sequencer(audioContext, "cege; @($len) l8>ccccdddd");
+
+    sequencer.len = 8;
 
     var timeline = [];
 

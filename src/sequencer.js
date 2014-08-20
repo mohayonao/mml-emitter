@@ -4,8 +4,8 @@ var BUFFER_SIZE = 512;
 
 var extend = require("./extend");
 var MMLParser = require("./mml-parser");
-var Emitter = require("./emitter");
 var Track = require("./track");
+var Emitter = require("./emitter");
 
 function Sequencer(audioContext, mml) {
   Emitter.call(this);

@@ -5,7 +5,7 @@ var FUNC = 1;
 
 var extend  = require("./extend");
 var Emitter = require("./emitter");
-var Compiler = require("./compiler");
+var MMLCompiler = require("./mml-compiler");
 
 function schedSorter(a, b) {
   return a[WHEN] - b[WHEN];
@@ -16,7 +16,8 @@ function Track(parent, nodes) {
 
   this._index = 0;
   this._parent = parent;
-  this._nodes = new Compiler(this).compile(nodes);
+  this._shared = parent;
+  this._nodes = MMLCompiler.compile(this, nodes);
   this._sched = [];
   this._currentTimeIncr = 0;
 }

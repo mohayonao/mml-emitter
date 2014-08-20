@@ -1,7 +1,8 @@
 "use strict";
 
 var Scanner = require("./scanner");
-var Syntax  = require("./syntax");
+var ExprParser = require("./expr-parser");
+var Syntax = require("./syntax");
 
 function append(list, elem) {
 
@@ -13,11 +14,6 @@ function append(list, elem) {
 
   return list;
 }
-
-function defaults(val, defaultValue) {
-  return val === null ? defaultValue : val;
-}
-
 
 function parse(scanner) {
 
@@ -62,11 +58,15 @@ function parse(scanner) {
     return 0;
   }
 
-  function length(defaultVal) {
-    return append([ defaults(arg(/\d+/), defaultVal) ].concat(dot()), tie());
+  function length() {
+    return append([ arg(/\d+/) ].concat(dot()), tie());
   }
 
   function arg(matcher) {
+    if (scanner.match("(")) {
+      return expr();
+    }
+
     var num = scanner.scan(matcher);
 
     return num !== null ? +num : null;
@@ -84,7 +84,7 @@ function parse(scanner) {
   }
 
   function note() {
-    return { type: Syntax.Note, number: [ noteNum(0) ], length: length(null) };
+    return { type: Syntax.Note, number: [ noteNum(0) ], length: length() };
   }
 
   function chord() {
@@ -113,43 +113,43 @@ function parse(scanner) {
 
     scanner.expect("]");
 
-    return { type: Syntax.Note, number: number, length: length(null) };
+    return { type: Syntax.Note, number: number, length: length() };
   }
 
   function r() {
     scanner.expect("r");
 
-    return { type: Syntax.Note, number: [], length: length(null) };
+    return { type: Syntax.Note, number: [], length: length() };
   }
 
   function o() {
     scanner.expect("o");
 
-    return { type: Syntax.Octave, value: defaults(arg(/\d+/), 5) };
+    return { type: Syntax.Octave, value: arg(/\d+/) };
   }
 
   function oShift(direction) {
     scanner.expect(/<|>/);
 
-    return { type: Syntax.OctaveShift, direction: direction|0, value: defaults(arg(/\d+/), 1) };
+    return { type: Syntax.OctaveShift, direction: direction|0, value: arg(/\d+/) };
   }
 
   function l() {
     scanner.expect("l");
 
-    return { type: Syntax.Length, length: length(4) };
+    return { type: Syntax.Length, length: length() };
   }
 
   function q() {
     scanner.expect("q");
 
-    return { type: Syntax.Quantize, value: defaults(arg(/\d+/), 6) };
+    return { type: Syntax.Quantize, value: arg(/\d+/) };
   }
 
   function t() {
     scanner.expect("t");
 
-    return { type: Syntax.Tempo, value: defaults(arg(/\d+(\.\d+)?/), 120) };
+    return { type: Syntax.Tempo, value: arg(/\d+(\.\d+)?/) };
   }
 
   function infLoop() {
@@ -195,6 +195,32 @@ function parse(scanner) {
     return seq;
   }
 
+  function command() {
+    scanner.expect("@");
+
+    return { type: Syntax.Command, value: arg(/\d+/) };
+  }
+
+  function expr() {
+    var node;
+
+    scanner.expect("(");
+
+    node = ExprParser.parse(scanner);
+
+    scanner.expect(")");
+
+    node.variables.forEach(function(id) {
+      if (id.charAt(0) === "_") {
+        throw new SyntaxError(
+          "A variable in directives should not be started with '_': " + id
+        );
+      }
+    });
+
+    return { type: Syntax.Expression, expr: node.expr, variables: node.variables };
+  }
+
   function advance() {
     switch (scanner.peek()) {
     case "c": case "d": case "e": case "f": case "g": case "a": case "b":
@@ -219,6 +245,8 @@ function parse(scanner) {
       return infLoop();
     case "/":
       return loop();
+    case "@":
+      return command();
     }
     scanner.throwUnexpectedToken();
   }

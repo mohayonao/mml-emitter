@@ -1,6 +1,6 @@
 "use strict";
 
-var Compiler = require("../src/compiler");
+var MMLCompiler = require("../src/mml-compiler");
 var MMLParser = require("../src/mml-parser");
 var Emitter = require("../src/emitter");
 
@@ -14,7 +14,7 @@ function duration(tempo, len, dot, quantize) {
   return (60 / tempo) * (4 / len) * mul * (quantize / 8);
 }
 
-describe("Compiler", function() {
+describe("MMLCompiler", function() {
   describe("compile", function() {
     var testCase = {
       "ceg": [
@@ -111,6 +111,21 @@ describe("Compiler", function() {
         [ "note", 7, 76, duration(120, 4, 0, 6), 0 ],
         [ "end", 8 ],
       ],
+      "@": [
+        [ "end", 0 ],
+      ],
+      "q(8/4) ceg": [
+        [ "note", 0, 72, duration(120, 4, 0, 2), 0 ],
+        [ "note", 1, 76, duration(120, 4, 0, 2), 0 ],
+        [ "note", 2, 79, duration(120, 4, 0, 2), 0 ],
+        [ "end", 3 ],
+      ],
+      "l(16)^(16) ceg": [
+        [ "note", 0, 72, duration(120, 8, 0, 6), 0 ],
+        [ "note", 1, 76, duration(120, 8, 0, 6), 0 ],
+        [ "note", 2, 79, duration(120, 8, 0, 6), 0 ],
+        [ "end", 3 ],
+      ]
     };
 
     Object.keys(testCase).forEach(function(mml) {
@@ -134,7 +149,7 @@ describe("Compiler", function() {
           passed.push([ "end", e.when ]);
         });
 
-        var compiled = new Compiler({}).compile(MMLParser.parse(mml)[0]);
+        var compiled = MMLCompiler.compile({}, MMLParser.parse(mml)[0]);
 
         while (obj._index < compiled.length && when < 16) {
           compiled[obj._index](obj, when);

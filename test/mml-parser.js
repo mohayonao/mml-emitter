@@ -124,7 +124,7 @@ describe("parse", function() {
     "o": [[
       {
         type: Syntax.Octave,
-        value: 5
+        value: null
       }
     ]],
     "o4": [[
@@ -138,17 +138,17 @@ describe("parse", function() {
       {
         type: Syntax.OctaveShift,
         direction: -1,
-        value: 1
+        value: null
       },
       {
         type: Syntax.OctaveShift,
         direction: -1,
-        value: 1
+        value: null
       },
       {
         type: Syntax.OctaveShift,
         direction: +1,
-        value: 1
+        value: null
       }
     ]],
     "<2": [[
@@ -162,7 +162,7 @@ describe("parse", function() {
     "l": [[
       {
         type: Syntax.Length,
-        length: [ 4 ]
+        length: [ null ]
       }
     ]],
     "l4": [[
@@ -187,7 +187,7 @@ describe("parse", function() {
     "q": [[
       {
         type: Syntax.Quantize,
-        value: 6
+        value: null
       }
     ]],
     "q2": [[
@@ -200,7 +200,7 @@ describe("parse", function() {
     "t": [[
       {
         type: Syntax.Tempo,
-        value: 120
+        value: null
       }
     ]],
     "t125.5": [[
@@ -323,6 +323,35 @@ describe("parse", function() {
     ":/": new SyntaxError("Unexpected token: ':'"),
     "|": new SyntaxError("Unexpected token: '|'"),
     "/:c:/ 4": new SyntaxError("Unexpected token: '4'"),
+    "@(a)": [[
+      {
+        type: Syntax.Command,
+        value: {
+          type: Syntax.Expression,
+          expr: "this.a",
+          variables: [ "a" ]
+        }
+      }
+    ]],
+    "@(_a)": new SyntaxError("A variable in directives should not be started with '_': _a"),
+    "l(4)^(a).": [[
+      {
+        type: Syntax.Length,
+        length: [
+          {
+            type: Syntax.Expression,
+            expr: "4",
+            variables: []
+          },
+          {
+            type: Syntax.Expression,
+            expr: "this.a",
+            variables: [ "a" ]
+          },
+          0
+        ]
+      }
+    ]],
     "c; e; g;": [
       [
         {

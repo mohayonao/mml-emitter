@@ -1,6 +1,7 @@
 "use strict";
 
 module.exports = {
+  Expression: -1,
   Begin: 0,
   Note: 1,
   Octave: 2,
@@ -12,5 +13,6 @@ module.exports = {
   LoopBegin: 8,
   LoopExit: 9,
   LoopEnd: 10,
+  Command: 11,
   End: 99,
 };
