@@ -1,14 +1,14 @@
 "use strict";
 
 var MMLParser = require("../src/mml-parser");
-var Track = require("../src/track");
+var MMLTrack = require("../src/mml-track");
 
-describe("Track", function() {
+describe("MMLTrack", function() {
 
   it("should work", function() {
     var timeline = [];
 
-    var track = new Track(null, MMLParser.parse("cd l(len) efg[ab]")[0])
+    var track = new MMLTrack(null, MMLParser.parse("cd l(len) efg[ab]")[0])
       .on("note", function(e) {
         var midi = e.midi;
 

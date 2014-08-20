@@ -4,24 +4,24 @@ var BUFFER_SIZE = 512;
 
 var extend = require("./extend");
 var MMLParser = require("./mml-parser");
-var Track = require("./track");
+var MMLTrack = require("./mml-track");
 var Emitter = require("./emitter");
 
-function Sequencer(audioContext, mml) {
+function MMLEmitter(audioContext, mml) {
   Emitter.call(this);
 
   this.audioContext = audioContext;
   this.tracks = MMLParser.parse(mml).map(function(nodes) {
-    return new Track(this, nodes);
+    return new MMLTrack(this, nodes);
   }, this);
   this._ended = 0;
   this._node = null;
   this._currentTime = 0;
   this._currentTimeIncr = 0;
 }
-extend(Sequencer, Emitter);
+extend(MMLEmitter, Emitter);
 
-Sequencer.prototype.start = function() {
+MMLEmitter.prototype.start = function() {
   this.stop();
 
   var currentTime = this.audioContext.currentTime;
@@ -40,7 +40,7 @@ Sequencer.prototype.start = function() {
   return this;
 };
 
-Sequencer.prototype.stop = function() {
+MMLEmitter.prototype.stop = function() {
   if (this._node) {
     this._node.disconnect();
   }
@@ -49,7 +49,7 @@ Sequencer.prototype.stop = function() {
   return this;
 };
 
-Sequencer.prototype._recv = function(message) {
+MMLEmitter.prototype._recv = function(message) {
   /* istanbul ignore else */
   if (message && message.type === "end") {
     this._ended += 1;
@@ -59,7 +59,7 @@ Sequencer.prototype._recv = function(message) {
   }
 };
 
-Sequencer.prototype._process = function() {
+MMLEmitter.prototype._process = function() {
   var currentTime = this.audioContext.currentTime;
 
   this.tracks.forEach(function(track) {
@@ -67,4 +67,4 @@ Sequencer.prototype._process = function() {
   });
 };
 
-module.exports = Sequencer;
+module.exports = MMLEmitter;

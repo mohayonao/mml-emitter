@@ -11,7 +11,7 @@ function schedSorter(a, b) {
   return a[WHEN] - b[WHEN];
 }
 
-function Track(parent, nodes) {
+function MMLTrack(parent, nodes) {
   Emitter.call(this);
 
   this._index = 0;
@@ -21,9 +21,9 @@ function Track(parent, nodes) {
   this._sched = [];
   this._currentTimeIncr = 0;
 }
-extend(Track, Emitter);
+extend(MMLTrack, Emitter);
 
-Track.prototype._init = function(currentTime, currentTimeIncr) {
+MMLTrack.prototype._init = function(currentTime, currentTimeIncr) {
   this._currentTimeIncr = currentTimeIncr;
 
   var next = function(currentTime) {
@@ -44,7 +44,7 @@ Track.prototype._init = function(currentTime, currentTimeIncr) {
   next(currentTime);
 };
 
-Track.prototype._process = function(currentTime) {
+MMLTrack.prototype._process = function(currentTime) {
   var nextCurrentTime = currentTime + this._currentTimeIncr;
 
   var sched = this._sched;
@@ -56,7 +56,7 @@ Track.prototype._process = function(currentTime) {
   }
 };
 
-Track.prototype._recv = function(message, opts) {
+MMLTrack.prototype._recv = function(message, opts) {
   opts = opts || {};
 
   if (message.type === "sched") {
@@ -70,11 +70,11 @@ Track.prototype._recv = function(message, opts) {
   }
 };
 
-Track.prototype.sched = function(when, fn) {
+MMLTrack.prototype.sched = function(when, fn) {
   this._sched.push([ when, fn ]);
   this._sched.sort(schedSorter);
 
   return this;
 };
 
-module.exports = Track;
+module.exports = MMLTrack;

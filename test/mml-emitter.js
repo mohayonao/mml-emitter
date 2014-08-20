@@ -1,45 +1,46 @@
 "use strict";
 
-var Sequencer = require("../src/sequencer");
+var MMLEmitter = require("../src/mml-emitter");
 
-describe("sequencer", function() {
-  it("should work", function() {
-    var audioContext = new AudioContextShim();
-    var sequencer = new Sequencer(audioContext, "ceg");
+describe("MMLEmitter", function() {
 
-    expect(sequencer.start()).to.equal(sequencer);
-    expect(sequencer.stop()).to.equal(sequencer);
+  describe(".version", function() {
+    it("should equal the version specified by package.json", function() {
+      var pkg = require("../package.json");
+
+      expect(MMLEmitter.version).to.equal(pkg.version);
+    });
   });
 
-  it("timeline", function() {
+  it("should work", function() {
     var audioContext = new AudioContextShim();
-    var sequencer = new Sequencer(audioContext, "cege; @($len) l8>ccccdddd");
+    var mmlEmitter = new MMLEmitter(audioContext, "cege; @($len) l8>ccccdddd");
 
-    sequencer.len = 8;
+    mmlEmitter.len = 8;
 
     var timeline = [];
 
-    sequencer.tracks[0].on("note", function(e) {
+    mmlEmitter.tracks[0].on("note", function(e) {
       timeline.push([ e.when, "note(0)", e.midi ]);
     }).on("end", function(e) {
       timeline.push([ e.when, "end(0)" ]);
     });
 
-    sequencer.tracks[1].on("note", function(e) {
+    mmlEmitter.tracks[1].on("note", function(e) {
       timeline.push([ e.when, "note(1)", e.midi ]);
     }).on("end", function(e) {
       timeline.push([ e.when, "end(1)" ]);
     });
 
-    sequencer.on("end", function(e) {
+    mmlEmitter.on("end", function(e) {
       timeline.push([ e.when, "end(*)" ]);
     });
 
-    sequencer.start();
+    mmlEmitter.start();
 
     audioContext.process(2.5);
 
-    sequencer.stop();
+    mmlEmitter.stop();
 
     expect(timeline).to.eql([
       [ 0.00, 'note(0)', 72 ],

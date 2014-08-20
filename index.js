@@ -1,1 +1,1 @@
-module.exports = require("./src/wamml");
+module.exports = require("./src/");
