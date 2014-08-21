@@ -24,9 +24,13 @@
 ## Usage
 
 ```javascript
-function midicps(midi) {
-  return 440 * Math.pow(2, (midi - 69) * 1 / 12);
-}
+var mml = new MMLEmitter(
+  audioContext, "t100 l8 @(wave='sawtooth') cege [>eg<c]2"
+);
+
+mml.tracks[0].on("note", noteEventHandler);
+
+mml.start();
 
 function noteEventHandler(e) {
   var osc  = audioContext.createOscillator();
@@ -34,8 +38,8 @@ function noteEventHandler(e) {
   var when = e.when;
 
   osc.frequency.value = midicps(e.midi);
-  osc.type = "triangle";
-  amp.gain.setValueAtTime(0.25, when);
+  osc.type = this.wave || "triangle";
+  amp.gain.setValueAtTime(0.25 * (e.volume / 16), when);
   amp.gain.linearRampToValueAtTime(0.0, when + e.duration);
 
   osc.start(when);
@@ -44,16 +48,8 @@ function noteEventHandler(e) {
 
   e.noteOff(function() {
     amp.disconnect();
-  }, 0.1); // called after 'e.duration' + 0.1sec
+  }, 0.1); // called after 'duration' + 0.1sec
 }
-
-var mml = new MMLEmitter(
-  audioContext, "t100 l8 cege [>eg<c]2"
-);
-
-mml.tracks[0].on("note", noteEventHandler);
-
-mml.start();
 ```
 
 ## Features
@@ -78,32 +74,37 @@ mml.start();
 
 #### Directives
 
+`( expr )` is evaluated at runtime
+
 ```javascript
 var mml = new MMLEmitter(
-  audioContext, "t($tempo) l(len) @(doSomething()) cdef gab<c >"
+  audioContext, "t($tempo) l(len) @(log('bang!!')) cdef gab<c >"
 );
 
 // if starts with '$', it is a shared variable for all tracks
 mml.tempo = 120;
 
+// same above
+mml.tracks[0].$tempo = 120;
+
 // else, it is a variable for the specified track.
 mml.tracks[0].len = _.sample([ 2, 4, 8 ,16 ]);
 
-mml.tracks[0].doSomething = function() {
-  console.log("bang!!");
+mml.tracks[0].log = function(msg) {
+  console.log(msg);
 };
 ```
 
-## Syntax
+## MML Syntax
 
 ###### Pitch
 
   - [**a**-**g**][**-+**]?_[number]_**.***
-    - note on (1-1920, default: l)
+    - note on (1-64, default: l)
   - **[** ([**a**-**g**][**-+**]?|[**<>**])+ **]**_[number]_**.***
-    - chord (1-1920, default: l)
+    - chord (1-64, default: l)
   - **r**_[number]_**.***
-    - rest (1-1920, default: l)
+    - rest (1-64, default: l)
   - **o**_[number]_
     - octave (0-9, default: 5)
   - **<**_[number]_
@@ -114,18 +115,18 @@ mml.tracks[0].doSomething = function() {
 ###### Duration
 
   - **l**_[number]_**.***
-    - length (1-1920, default: 4)
+    - length (1-64, default: 4)
   - **^**_[number]_**.***
-    - tie (1-1920, default: l)
+    - tie (1-64, default: l)
   - **q**_[number]_
     - quantize (0-8, default: 6)
 
 ###### Control
 
   - **t**_[number]_
-    - tempo (1-511, default: 120)
+    - tempo (30-240, default: 120)
   - **v**_[number]_
-    - velocity (0-16, default: 12)
+    - volume (0-16, default: 12)
   - **$**
     - infinite loop
   - **/:** ... **|** ... **:/**_[number]_
@@ -149,7 +150,7 @@ mml.tracks[0].doSomething = function() {
 
 ###### Constructor
 
-  - `new MMLEmitter(audioContext:AudioContext, mml:string) : MMLEmitter`
+  - `new MMLEmitter(audioContext:AudioContext, mml:string, config:object) : MMLEmitter`
 
 ###### Methods
 
@@ -167,7 +168,8 @@ mml.tracks[0].doSomething = function() {
 ###### Events
 
   - `"end" : (event:object)->`
-    - `when:number`
+    - `type:string` event name, "end"
+    - `when:number` current time
 
 ### MMLTrack
 
@@ -180,14 +182,53 @@ mml.tracks[0].doSomething = function() {
 ###### Events
 
   - `"note" : (event:object)->`
-    - `when:number`
-    - `midi:number`
-    - `duration:number`
+    - `type:string` event name, "note"
+    - `index:number` index of note events
+    - `when:number` what time (in seconds) the sound should start playing
+    - `nextWhen:number` time of next note event
+    - `midi:number` calculated midi tone number
+    - `frequency:number` calculated frequency
+    - `duration:number` calculated duration
+    - `isChord:boolean` true if it is a part of chord
+    - `chordIndex:number` index of chord
+    - `noteNum:number` information of note number
+    - `accidental:number` information of accidental
+    - `tempo:number` current value of `t` command
+    - `volume:number` current value of `v` command
+    - `octave:number` current value of `o` command
+    - `length:number` current value of `l` command
+    - `quantize:number` current value of `q` command
     - `noteOff:function`
-    - `chordIndex:number`
-    - `velocity:number`
   - `"end" : (event:object)->`
-    - `when:number`
+    - `type:string` event name, "end"
+    - `when:number` current time
+
+### Custom Cnofiguration
+
+In MMLEmitter constructor, you can give third argument to adapt custom configuration.
+
+```json
+{
+  "defaultTempo": 120,
+  "minTempo": 30,
+  "maxTempo": 240,
+  "defaultOctave": 5,
+  "minOctave": 0,
+  "maxOctave": 9,
+  "defaultLength": 4,
+  "minLength": 1,
+  "maxLength": 64,
+  "defaultQuantize": 6,
+  "minQuantize": 0,
+  "maxQuantize": 8,
+  "defaultVolume": 12,
+  "minVolume": 0,
+  "maxVolume": 16,
+  "octaveShiftDirection": 1,
+  "A4Frequency": 440.0,
+  "A4Index": 69
+}
+```
 
 ## Contribution
 
