@@ -2,13 +2,15 @@
 
 var MMLParser = require("../src/mml-parser");
 var MMLTrack = require("../src/mml-track");
+var Config = require("../src/config");
 
 describe("MMLTrack", function() {
 
   it("should work", function() {
     var timeline = [];
 
-    var track = new MMLTrack(null, MMLParser.parse("cd l(len) efg[ab]")[0])
+    var config = Config.build({ A4Index: 57 });
+    var track = new MMLTrack(null, MMLParser.parse("cd l(len) efg[ab]")[0], config)
       .on("note", function(e) {
         var midi = e.midi;
 
@@ -41,29 +43,29 @@ describe("MMLTrack", function() {
 
     expect(timeline).to.eql([
       [ 100.0000, "init",    ],
-      [ 100.0000, "note", 72 ],
+      [ 100.0000, "note", 60 ],
       [ 100.2000, "----",    ],
-      [ 100.3750, "nOFF", 72 ],
+      [ 100.3750, "nOFF", 60 ],
       [ 100.4000, "----",    ],
-      [ 100.5000, "note", 74 ],
+      [ 100.5000, "note", 62 ],
       [ 100.6000, "----",    ],
       [ 100.8000, "----",    ],
-      [ 100.8750, "nOFF", 74 ],
-      [ 101.0000, "note", 76 ],
+      [ 100.8750, "nOFF", 62 ],
+      [ 101.0000, "note", 64 ],
       [ 101.0000, "----",    ],
-      [ 101.1875, "nOFF", 76 ],
+      [ 101.1875, "nOFF", 64 ],
       [ 101.2000, "----",    ],
-      [ 101.2500, "note", 77 ],
+      [ 101.2500, "note", 65 ],
       [ 101.4000, "----",    ],
-      [ 101.4375, "nOFF", 77 ],
-      [ 101.5000, "note", 79 ],
+      [ 101.4375, "nOFF", 65 ],
+      [ 101.5000, "note", 67 ],
       [ 101.6000, "----",    ],
-      [ 101.6875, "nOFF", 79 ],
-      [ 101.7500, "note", 81 ],
-      [ 101.7500, "note", 83 ],
+      [ 101.6875, "nOFF", 67 ],
+      [ 101.7500, "note", 69 ],
+      [ 101.7500, "note", 71 ],
       [ 101.8000, "----",    ],
-      [ 101.9375, "nOFF", 81 ],
-      [ 101.9375, "nOFF", 83 ],
+      [ 101.9375, "nOFF", 69 ],
+      [ 101.9375, "nOFF", 71 ],
       [ 102.0000, "end" ,    ]
     ]);
   });

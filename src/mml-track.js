@@ -11,12 +11,13 @@ function schedSorter(a, b) {
   return a[WHEN] - b[WHEN];
 }
 
-function MMLTrack(parent, nodes) {
+function MMLTrack(parent, nodes, config) {
   Emitter.call(this);
 
-  this._index = 0;
+  this._pos = 0;
   this._parent = parent;
   this._shared = parent;
+  this._config = config;
   this._nodes = MMLCompiler.compile(this, nodes);
   this._sched = [];
   this._currentTimeIncr = 0;
@@ -27,15 +28,15 @@ MMLTrack.prototype._init = function(currentTime, currentTimeIncr) {
   this._currentTimeIncr = currentTimeIncr;
 
   var next = function(currentTime) {
-    var nextCurrentTime = currentTime + this._currentTimeIncr;
+    var nextCurrentTime = currentTime + this._currentTimeIncr + 0.015;
     var nodes = this._nodes;
 
-    while (this._index < nodes.length && currentTime < nextCurrentTime) {
-      currentTime = nodes[this._index](this, currentTime);
-      this._index += 1;
+    while (this._pos < nodes.length && currentTime < nextCurrentTime) {
+      currentTime = nodes[this._pos](this, currentTime);
+      this._pos += 1;
     }
 
-    if (this._index < nodes.length) {
+    if (this._pos < nodes.length) {
       this.sched(currentTime, next);
     }
 
@@ -45,7 +46,7 @@ MMLTrack.prototype._init = function(currentTime, currentTimeIncr) {
 };
 
 MMLTrack.prototype._process = function(currentTime) {
-  var nextCurrentTime = currentTime + this._currentTimeIncr;
+  var nextCurrentTime = currentTime + this._currentTimeIncr + 0.015;
 
   var sched = this._sched;
 

@@ -23,6 +23,7 @@ function valueOf(ctx, value, defaultVal) {
 }
 
 function calcTotalDuration(ctx, length) {
+  var config = ctx._config;
   var prev = null;
   var dotted = 0;
 
@@ -38,7 +39,12 @@ function calcTotalDuration(ctx, length) {
     } else {
       prev = dotted = elem;
     }
-    return (60 / ctx._tempo) * (4 / clip(valueOf(ctx, elem, 4), 1, 1920));
+
+    var length = valueOf(ctx, elem, 4);
+
+    length = clip(length, config.minLength, config.maxLength);
+
+    return (60 / ctx._tempo) * (4 / length);
   }).reduce(sum, 0);
 }
 
@@ -72,15 +78,16 @@ function compile(track, nodes) {
 
 compile[Syntax.Begin] = function() {
   return function(ctx, currentTime) {
-    ctx._tempo    = 120;
-    ctx._octave   = 5;
-    ctx._quantize = 6;
-    ctx._volume = 12;
-    ctx._length   = 4;
+    ctx._tempo    = ctx._config.defaultTempo;
+    ctx._octave   = ctx._config.defaultOctave;
+    ctx._quantize = ctx._config.defaultQuantize;
+    ctx._volume   = ctx._config.defaultVolume;
+    ctx._length   = ctx._config.defaultLength;
     ctx._lenList  = [ ctx._length ];
     ctx._loopStack = [];
-    ctx._infLoopIndex = null;
-    ctx._infLoopWhen  = currentTime;
+    ctx._infLoopPos  = null;
+    ctx._infLoopWhen = currentTime;
+    ctx._noteIndex = 0;
 
     return currentTime;
   };
@@ -88,9 +95,9 @@ compile[Syntax.Begin] = function() {
 
 compile[Syntax.End] = function() {
   return function(ctx, currentTime) {
-    if (ctx._infLoopIndex !== null) {
+    if (ctx._infLoopPos !== null) {
       if (ctx._infLoopWhen !== currentTime) {
-        ctx._index = ctx._infLoopIndex;
+        ctx._pos = ctx._infLoopPos;
       }
     } else {
       ctx._recv({
@@ -105,13 +112,22 @@ compile[Syntax.End] = function() {
 
 compile[Syntax.Note] = function(node) {
   return function(ctx, currentTime) {
+    var config = ctx._config;
     var totalDuration = calcTotalDuration(ctx, node.length);
-    var duration = totalDuration * (ctx._quantize / 8);
+    var duration = totalDuration * (ctx._quantize / config.maxQuantize);
 
-    var volume = ctx._volume;
+    var noteIndex = ctx._noteIndex++;
+    var isChord = node.note.length > 1;
 
     node.note.forEach(function(note, index) {
-      var midi = ctx._octave * 12 + note.noteNum + note.acci + 12;
+      var midi, frequency;
+
+      midi = note.noteNum + note.acci;
+      midi += ctx._octave * 12;
+      midi += config.A4Index - 57;
+
+      frequency = config.A4Frequency;
+      frequency *= Math.pow(2, (midi - config.A4Index) * 1 / 12);
 
       function noteOff(fn, offset) {
         ctx._recv({
@@ -123,12 +139,22 @@ compile[Syntax.Note] = function(node) {
 
       ctx._recv({
         type: "note",
+        index: noteIndex,
         when: currentTime,
+        nextWhen: currentTime + totalDuration,
         midi: midi,
+        frequency: frequency,
+        noteNum: note.noteNum,
+        accidental: note.acci,
         duration: duration,
-        noteOff: noteOff,
+        isChord: isChord,
         chordIndex: index,
-        volume: volume
+        tempo: ctx._tempo,
+        volume: ctx._volume,
+        octave: ctx._octave,
+        length: ctx._length,
+        quantize: ctx._quantize,
+        noteOff: noteOff,
       });
     });
 
@@ -138,7 +164,10 @@ compile[Syntax.Note] = function(node) {
 
 compile[Syntax.Octave] = function(node) {
   return function(ctx, currentTime) {
-    ctx._octave = clip(valueOf(ctx, node.value, 5), 0, 8);
+    var config = ctx._config;
+    var octave = valueOf(ctx, node.value, config.defaultOctave);
+
+    ctx._octave = clip(octave, config.minOctave, config.maxOctave);
 
     return currentTime;
   };
@@ -146,16 +175,25 @@ compile[Syntax.Octave] = function(node) {
 
 compile[Syntax.OctaveShift] = function(node) {
   return function(ctx, currentTime) {
-    var octave = ctx._octave + node.direction * valueOf(ctx, node.value, 1);
-    ctx._octave = clip(octave, 0, 8);
+    var config = ctx._config;
+    var octave = ctx._octave;
+
+    octave += node.direction * config.octaveShiftDirection * valueOf(ctx, node.value, 1);
+    ctx._octave = clip(octave, config.minOctave, config.maxOctave);
+
     return currentTime;
   };
 };
 
 compile[Syntax.Length] = function(node) {
   return function(ctx, currentTime) {
-    ctx._length  = node.length[0];
-    ctx._lenList = node.length;
+    var config = ctx._config;
+
+    ctx._lenList = node.length.map(function(node) {
+      var length = valueOf(ctx, node, config.defaultLength);
+      return clip(length, config.minLength, config.maxLength);
+    }, this);
+    ctx._length  = ctx._lenList[0];
 
     return currentTime;
   };
@@ -163,7 +201,10 @@ compile[Syntax.Length] = function(node) {
 
 compile[Syntax.Quantize] = function(node) {
   return function(ctx, currentTime) {
-    ctx._quantize = clip(valueOf(ctx, node.value, 6), 0, 8);
+    var config = ctx._config;
+    var quantize = valueOf(ctx, node.value, config.defaultQuantize);
+
+    ctx._quantize = clip(quantize, config.minQuantize, config.maxQuantize);
 
     return currentTime;
   };
@@ -171,7 +212,10 @@ compile[Syntax.Quantize] = function(node) {
 
 compile[Syntax.Tempo] = function(node) {
   return function(ctx, currentTime) {
-    ctx._tempo = clip(valueOf(ctx, node.value, 120), 1, 511);
+    var config = ctx._config;
+    var tempo = valueOf(ctx, node.value, config.defaultTempo);
+
+    ctx._tempo = clip(tempo, config.minTempo, config.maxTempo);
 
     return currentTime;
   };
@@ -179,7 +223,10 @@ compile[Syntax.Tempo] = function(node) {
 
 compile[Syntax.Volume] = function(node) {
   return function(ctx, currentTime) {
-    ctx._volume = clip(valueOf(ctx, node.value, 12), 0, 16);
+    var config = ctx._config;
+    var volume = valueOf(ctx, node.value, config.defaultVolume);
+
+    ctx._volume = clip(volume, config.minVolume, config.maxVolume);
 
     return currentTime;
   };
@@ -187,8 +234,8 @@ compile[Syntax.Volume] = function(node) {
 
 compile[Syntax.InfLoop] = function(node, index) {
   return function(ctx, currentTime) {
-    ctx._infLoopIndex = index;
-    ctx._infLoopWhen  = currentTime;
+    ctx._infLoopPos  = index;
+    ctx._infLoopWhen = currentTime;
 
     return currentTime;
   };
@@ -209,7 +256,7 @@ compile[Syntax.LoopExit] = function() {
     var looper = peek(ctx._loopStack);
 
     if (looper[0] <= 1 && looper[2] !== null) {
-      ctx._index = looper[2];
+      ctx._pos = looper[2];
     }
 
     return currentTime;
@@ -227,7 +274,7 @@ compile[Syntax.LoopEnd] = function(node, index) {
     looper[0] -= 1;
 
     if (looper[0] > 0) {
-      ctx._index = looper[1];
+      ctx._pos = looper[1];
     } else {
       ctx._loopStack.pop();
     }

@@ -5,14 +5,17 @@ var BUFFER_SIZE = 512;
 var extend = require("./extend");
 var MMLParser = require("./mml-parser");
 var MMLTrack = require("./mml-track");
+var Config = require("./config");
 var Emitter = require("./emitter");
 
-function MMLEmitter(audioContext, mml) {
+function MMLEmitter(audioContext, mml, config) {
   Emitter.call(this);
+
+  config = Config.build(config);
 
   this.audioContext = audioContext;
   this.tracks = MMLParser.parse(mml).map(function(nodes) {
-    return new MMLTrack(this, nodes);
+    return new MMLTrack(this, nodes, config);
   }, this);
   this._ended = 0;
   this._node = null;
