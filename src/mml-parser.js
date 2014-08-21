@@ -27,10 +27,26 @@ function parse(scanner) {
     }
   }
 
+  function noteInfo(offset) {
+    return { noteNum: noteNum(offset), acci: acci() };
+  }
+
   function noteNum(offset) {
     return {
       c:0, d:2, e:4, f:5, g:7, a:9, b:11
-    }[scanner.next()] + acci() + offset;
+    }[scanner.next()] + offset;
+  }
+
+  function acci() {
+    if (scanner.match("+")) {
+      return +1 * scanner.scan(/\++/).length;
+    }
+
+    if (scanner.match("-")) {
+      return -1 * scanner.scan(/\-+/).length;
+    }
+
+    return 0;
   }
 
   function dot() {
@@ -42,20 +58,6 @@ function parse(scanner) {
     }
 
     return result;
-  }
-
-  function acci() {
-    if (scanner.match("+")) {
-      scanner.next();
-      return +1;
-    }
-
-    if (scanner.match("-")) {
-      scanner.next();
-      return -1;
-    }
-
-    return 0;
   }
 
   function length() {
@@ -84,19 +86,19 @@ function parse(scanner) {
   }
 
   function note() {
-    return { type: Syntax.Note, number: [ noteNum(0) ], length: length() };
+    return { type: Syntax.Note, note: [ noteInfo(0) ], length: length() };
   }
 
   function chord() {
     scanner.expect("[");
 
-    var number = [];
+    var noteList = [];
     var offset = 0;
 
     until("]", function() {
       switch (scanner.peek()) {
       case "c": case "d": case "e": case "f": case "g": case "a": case "b":
-        number.push(noteNum(offset));
+        noteList.push(noteInfo(offset));
         break;
       case "<":
         scanner.next();
@@ -113,13 +115,13 @@ function parse(scanner) {
 
     scanner.expect("]");
 
-    return { type: Syntax.Note, number: number, length: length() };
+    return { type: Syntax.Note, note: noteList, length: length() };
   }
 
   function r() {
     scanner.expect("r");
 
-    return { type: Syntax.Note, number: [], length: length() };
+    return { type: Syntax.Note, note: [], length: length() };
   }
 
   function o() {

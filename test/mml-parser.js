@@ -15,55 +15,73 @@ describe("MMLParser", function() {
       "c d e": [[
         {
           type: Syntax.Note,
-          number: [ 0 ],
+          note: [
+            { noteNum: 0, acci: 0}
+          ],
           length: [ null ]
         },
         {
           type: Syntax.Note,
-          number: [ 2 ],
+          note: [
+            { noteNum: 2, acci: 0 }
+          ],
           length: [ null ]
         },
         {
           type: Syntax.Note,
-          number: [ 4 ],
+          note: [
+            { noteNum: 4, acci: 0 }
+          ],
           length: [ null ]
         },
       ]],
       "f+ b-": [[
         {
           type: Syntax.Note,
-          number: [ 6 ],
+          note: [
+            { noteNum: 5, acci: 1 }
+          ],
           length: [ null ]
         },
         {
           type: Syntax.Note,
-          number: [ 10 ],
+          note: [
+            { noteNum: 11, acci: -1 }
+          ],
           length: [ null ]
         }
       ]],
       "f4 g8..": [[
         {
           type: Syntax.Note,
-          number: [ 5 ],
+          note: [
+            { noteNum: 5, acci: 0 }
+          ],
           length: [ 4 ],
         },
         {
           type: Syntax.Note,
-          number: [ 7 ],
+          note: [
+            { noteNum: 7, acci: 0 }
+          ],
           length: [ 8, 0, 0 ],
         },
       ]],
       "b ^4": [[
         {
           type: Syntax.Note,
-          number: [ 11 ],
+          note: [
+            { noteNum: 11, acci: 0 }
+          ],
           length: [ null, 4 ]
         }
       ]],
       "c ^^": [[
         {
           type: Syntax.Note,
-          number: [ 0 ],
+          note: [
+            { noteNum: 0, acci: 0 }
+          ],
           length: [ null, null, null ]
         }
       ]],
@@ -72,28 +90,44 @@ describe("MMLParser", function() {
       "[ceg]": [[
         {
           type: Syntax.Note,
-          number: [ 0, 4, 7 ],
+          note: [
+            { noteNum: 0, acci: 0 },
+            { noteNum: 4, acci: 0 },
+            { noteNum: 7, acci: 0 }
+          ],
           length: [ null ]
         }
       ]],
       "[ g<ce ]": [[
         {
           type: Syntax.Note,
-          number: [ 7, 12, 16 ],
+          note: [
+            { noteNum:  7, acci: 0 },
+            { noteNum: 12, acci: 0 },
+            { noteNum: 16, acci: 0 }
+          ],
           length: [ null ]
         }
       ]],
       "[c > g e]": [[
         {
           type: Syntax.Note,
-          number: [ 0, -5, -8 ],
+          note: [
+            { noteNum:  0, acci: 0 },
+            { noteNum: -5, acci: 0 },
+            { noteNum: -8, acci: 0 }
+          ],
           length: [ null ]
         }
       ]],
       "[dfa]4.": [[
         {
           type: Syntax.Note,
-          number: [ 2, 5, 9 ],
+          note: [
+            { noteNum: 2, acci: 0 },
+            { noteNum: 5, acci: 0 },
+            { noteNum: 9, acci: 0 }
+          ],
           length: [ 4, 0 ]
         }
       ]],
@@ -103,21 +137,21 @@ describe("MMLParser", function() {
       "r": [[
         {
           type: Syntax.Note,
-          number: [],
+          note: [],
           length: [ null ]
         }
       ]],
       "r4": [[
         {
           type: Syntax.Note,
-          number: [],
+          note: [],
           length: [ 4 ]
         }
       ]],
       "r4. ^8": [[
         {
           type: Syntax.Note,
-          number: [],
+          note: [],
           length: [ 4, 0, 8 ]
         }
       ]],
@@ -230,7 +264,9 @@ describe("MMLParser", function() {
         },
         {
           type: Syntax.Note,
-          number: [ 9 ],
+          note: [
+            { noteNum: 9, acci: 0 }
+          ],
           length: [ null ]
         },
         {
@@ -244,7 +280,9 @@ describe("MMLParser", function() {
         },
         {
           type: Syntax.Note,
-          number: [ 0 ],
+          note: [
+            { noteNum:0, acci: 0 }
+          ],
           length: [ null ]
         },
         {
@@ -252,7 +290,9 @@ describe("MMLParser", function() {
         },
         {
           type: Syntax.Note,
-          number: [ 2 ],
+          note: [
+            { noteNum: 2, acci: 0 }
+          ],
           length: [ null ]
         },
         {
@@ -266,7 +306,9 @@ describe("MMLParser", function() {
         },
         {
           type: Syntax.Note,
-          number: [ 0 ],
+          note: [
+            { noteNum: 0, acci: 0 }
+          ],
           length: [ null ]
         },
         {
@@ -274,7 +316,9 @@ describe("MMLParser", function() {
         },
         {
           type: Syntax.Note,
-          number: [ 2 ],
+          note: [
+            { noteNum: 2, acci: 0 }
+          ],
           length: [ null ]
         },
         {
@@ -288,7 +332,9 @@ describe("MMLParser", function() {
         },
         {
           type: Syntax.Note,
-          number: [ 0 ],
+          note: [
+            { noteNum: 0, acci: 0 }
+          ],
           length: [ null ]
         },
         {
@@ -297,7 +343,9 @@ describe("MMLParser", function() {
         },
         {
           type: Syntax.Note,
-          number: [ 2 ],
+          note: [
+            { noteNum: 2, acci: 0 }
+          ],
           length: [ null ]
         },
         {
@@ -306,7 +354,9 @@ describe("MMLParser", function() {
         },
         {
           type: Syntax.Note,
-          number: [ 4 ],
+          note: [
+            { noteNum: 4, acci: 0 }
+          ],
           length: [ null ]
         },
         {
@@ -320,7 +370,9 @@ describe("MMLParser", function() {
         },
         {
           type: Syntax.Note,
-          number: [ 5 ],
+          note: [
+            { noteNum: 5, acci: 0 }
+          ],
           length: [ null ]
         },
         {
@@ -364,19 +416,25 @@ describe("MMLParser", function() {
         [
           {
             type: Syntax.Note,
-            number: [ 0 ],
+            note: [
+              { noteNum: 0, acci: 0 }
+            ],
             length: [ null ]
           }
         ], [
           {
             type: Syntax.Note,
-            number: [ 4 ],
+            note: [
+              { noteNum: 4, acci: 0 }
+            ],
             length: [ null ]
           }
         ], [
           {
             type: Syntax.Note,
-            number: [ 7 ],
+            note: [
+              { noteNum: 7, acci: 0 }
+            ],
             length: [ null ]
           },
         ]

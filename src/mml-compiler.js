@@ -110,8 +110,8 @@ compile[Syntax.Note] = function(node) {
 
     var volume = ctx._volume;
 
-    node.number.forEach(function(number, index) {
-      var midi = ctx._octave * 12 + number + 12;
+    node.note.forEach(function(note, index) {
+      var midi = ctx._octave * 12 + note.noteNum + note.acci + 12;
 
       function noteOff(fn, offset) {
         ctx._recv({
