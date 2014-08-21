@@ -155,7 +155,7 @@ function parse(scanner) {
   function v() {
     scanner.expect("v");
 
-    return { type: Syntax.Velocity, value: arg(/\d+/) };
+    return { type: Syntax.Volume, value: arg(/\d+/) };
   }
 
   function infLoop() {

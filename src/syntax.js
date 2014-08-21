@@ -9,7 +9,7 @@ module.exports = {
   Length: 4,
   Quantize: 5,
   Tempo: 6,
-  Velocity: 7,
+  Volume: 7,
   InfLoop: 8,
   LoopBegin: 9,
   LoopExit: 10,

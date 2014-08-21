@@ -75,7 +75,7 @@ compile[Syntax.Begin] = function() {
     ctx._tempo    = 120;
     ctx._octave   = 5;
     ctx._quantize = 6;
-    ctx._velocity = 12;
+    ctx._volume = 12;
     ctx._length   = 4;
     ctx._lenList  = [ ctx._length ];
     ctx._loopStack = [];
@@ -108,7 +108,7 @@ compile[Syntax.Note] = function(node) {
     var totalDuration = calcTotalDuration(ctx, node.length);
     var duration = totalDuration * (ctx._quantize / 8);
 
-    var velocity = ctx._velocity;
+    var volume = ctx._volume;
 
     node.number.forEach(function(number, index) {
       var midi = ctx._octave * 12 + number + 12;
@@ -128,7 +128,7 @@ compile[Syntax.Note] = function(node) {
         duration: duration,
         noteOff: noteOff,
         chordIndex: index,
-        velocity: velocity
+        volume: volume
       });
     });
 
@@ -177,9 +177,9 @@ compile[Syntax.Tempo] = function(node) {
   };
 };
 
-compile[Syntax.Velocity] = function(node) {
+compile[Syntax.Volume] = function(node) {
   return function(ctx, currentTime) {
-    ctx._velocity = clip(valueOf(ctx, node.value, 12), 0, 16);
+    ctx._volume = clip(valueOf(ctx, node.value, 12), 0, 16);
 
     return currentTime;
   };

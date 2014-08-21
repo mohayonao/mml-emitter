@@ -213,7 +213,7 @@ describe("MMLParser", function() {
       "t 120": new SyntaxError("Unexpected token: '1'"),
       "v2": [[
         {
-          type: Syntax.Velocity,
+          type: Syntax.Volume,
           value: 2
         }
       ]],
