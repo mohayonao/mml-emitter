@@ -116,8 +116,12 @@ compile[Syntax.Note] = function(node) {
     var totalDuration = calcTotalDuration(ctx, node.length);
     var duration = totalDuration * (ctx._quantize / config.maxQuantize);
 
-    var noteIndex = ctx._noteIndex++;
+    var noteIndex = ctx._noteIndex;
     var isChord = node.note.length > 1;
+
+    if (node.note.length) {
+      ctx._noteIndex += 1;
+    }
 
     node.note.forEach(function(note, index) {
       var midi, frequency;
