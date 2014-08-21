@@ -20,11 +20,26 @@
           <div class="col-md-9">
             <div id="editor"></div>
             <div class="form-group">
-              <div class="btn btn-default" v-on="click: isPlaying ? stop() : play()">{{ isPlaying ? 'Stop' : 'Play' }}</div>
+              <div class="btn btn-default" v-on="click: isPlaying ? stop() : start()">{{ isPlaying ? 'Stop' : 'Start' }}</div>
             </div>
-            <div class="well">
-              <span v-style="display: message ? 'inline' : 'none'"><strong>SYNTAX ERROR!!</strong> {{ message }}</span>
-            </div>
+            <pre><code>function noteEventHandler(e) {
+  var osc  = audioContext.createOscillator();
+  var amp  = audioContext.createGain();
+  var when = e.when;
+
+  osc.frequency.value = e.frequency;
+  osc.type = this.wave || "triangle";
+  amp.gain.setValueAtTime(0.25 * (e.volume / 16), when);
+  amp.gain.linearRampToValueAtTime(0.00 , when + e.duration);
+
+  osc.start(when);
+  osc.connect(amp);
+  amp.connect(audioContext.destination);
+
+  e.noteOff(function() {
+    amp.disconnect();
+  });
+}</code></pre>
           </div>
           <div class="col-md-3">
             <h4>Examples</h4>
@@ -73,22 +88,12 @@
           }
         },
         methods: {
-          play: function() {
+          start: function() {
             if (mml) {
               mml.stop();
             }
 
-            try {
-              mml = new MMLEmitter(audioContext, this.mml);
-            } catch (e) {
-              mml = null;
-              this.message = e.message;
-              if (e.lineNumber && e.column) {
-                editor.focus();
-                editor.setCursor({ line: e.lineNumber - 1, ch: e.column - 1 });
-              }
-              throw e;
-            }
+            mml = new MMLEmitter(audioContext, this.mml);
 
             mml.blink = function(color) {
               $title.css("color", color);
@@ -151,8 +156,9 @@
         });
       }
 
-      function selectExample(title) {
-        vue.mml = (_.find(vue.examples, function(example) {
+      function selectExample(title, examples) {
+        examples = examples || vue.examples;
+        vue.mml = (_.find(examples, function(example) {
           return example.title === title;
         }) || {}).source || "";
       }
@@ -173,7 +179,7 @@
             return example.title !== "default";
           });
 
-          selectExample(title);
+          selectExample(title, examples);
         });
       }
 
