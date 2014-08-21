@@ -29,7 +29,7 @@
           <div class="col-md-3">
             <h4>Examples</h4>
             <ul>
-              <li v-repeat="examples" v-on="click: mml = source"><a href="javascript:void(0)">{{ title }}</a></li>
+              <li v-repeat="examples"><a href="#gistid:{{ gistid }}:{{ encodeURIComponent(title) }}">{{ title }}</a></li>
             </ul>
           </div>
         </div>
@@ -114,26 +114,19 @@
             }
             $title.css("color", "inherit");
             this.isPlaying = false;
-          }
+          },
+          encodeURIComponent: window.encodeURIComponent
         }
       });
-
-      function midicps(midi) {
-        return 440 * Math.pow(2, (midi - 69) * 1 / 12);
-      }
 
       function noteEventHandler(e) {
         var osc  = audioContext.createOscillator();
         var amp  = audioContext.createGain();
         var when = e.when;
-        var gain1 = 0.4 * (e.velocity / 16);
-        var gain2 = gain1 * 0.8;
 
-        osc.frequency.value = midicps(e.midi);
+        osc.frequency.value = e.frequency;
         osc.type = this.wave || "triangle";
-        amp.gain.setValueAtTime(0.00, when);
-        amp.gain.linearRampToValueAtTime(gain1, when + 0.005);
-        amp.gain.linearRampToValueAtTime(gain2, when + e.duration * 0.75);
+        amp.gain.setValueAtTime(0.25 * (e.volume / 16), when);
         amp.gain.linearRampToValueAtTime(0.00 , when + e.duration);
 
         osc.start(when);
@@ -143,6 +136,8 @@
         e.noteOff(function() {
           amp.disconnect();
         });
+
+        console.log(e);
       }
 
       function readFromGist(gistid, callback) {
@@ -156,38 +151,52 @@
         });
       }
 
-      function updateExamples(gistid) {
+      function selectExample(title) {
+        vue.mml = (_.find(vue.examples, function(example) {
+          return example.title === title;
+        }) || {}).source || "";
+      }
+
+      function updateExamples(gistid, title) {
         readFromGist(gistid, function(files) {
           var examples = _.chain(files).filter(function(file) {
             return /^(.+)\.mml$/.test(file.filename);
           }).map(function(file) {
             return {
               title : file.filename.match(/^(.+)\.mml$/)[1],
-              source: file.content
+              source: file.content,
+              gistid: gistid
             };
           }).value();
-
-          vue.mml = (_.find(examples, function(example) {
-            return example.title === "default";
-          }) || {}).source || "";
 
           vue.examples = _.filter(examples, function(example) {
             return example.title !== "default";
           });
+
+          selectExample(title);
         });
       }
 
+      var prevGistId = "";
+
       window.onhashchange = function() {
-        var matched = /^#gistid:([a-f\d]+)$/.exec(location.hash);
+        var matched = /^#gistid:([a-f\d]+)(?::(.+))?$/.exec(location.hash);
         if (matched) {
-          updateExamples(matched[1]);
+          matched[2] = decodeURIComponent(matched[2] || "default");
+
+          if (prevGistId !== matched[1]) {
+            prevGistId = matched[1];
+            updateExamples(matched[1], matched[2]);
+          } else {
+            selectExample(matched[2]);
+          }
         }
       };
 
       if (location.hash) {
         window.onhashchange();
       } else {
-        updateExamples("434a459011acc3402b9b");
+        window.location.replace("#gistid:434a459011acc3402b9b");
       }
     });
     </script>
