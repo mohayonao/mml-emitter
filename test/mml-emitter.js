@@ -13,7 +13,7 @@ describe("MMLEmitter", function() {
   });
 
   it("should work", function() {
-    var audioContext = new AudioContextShim();
+    var audioContext = new AudioContext();
     var mmlEmitter = new MMLEmitter(audioContext, "cege; @($len) l8>ccccdddd");
 
     mmlEmitter.len = 8;
@@ -21,24 +21,24 @@ describe("MMLEmitter", function() {
     var timeline = [];
 
     mmlEmitter.tracks[0].on("note", function(e) {
-      timeline.push([ e.when, "note(0)", e.midi ]);
+      timeline.push([ e.playbackTime, "note(0)", e.midi ]);
     }).on("end", function(e) {
-      timeline.push([ e.when, "end(0)" ]);
+      timeline.push([ e.playbackTime, "end(0)" ]);
     });
 
     mmlEmitter.tracks[1].on("note", function(e) {
-      timeline.push([ e.when, "note(1)", e.midi ]);
+      timeline.push([ e.playbackTime, "note(1)", e.midi ]);
     }).on("end", function(e) {
-      timeline.push([ e.when, "end(1)" ]);
+      timeline.push([ e.playbackTime, "end(1)" ]);
     });
 
     mmlEmitter.on("end", function(e) {
-      timeline.push([ e.when, "end(*)" ]);
+      timeline.push([ e.playbackTime, "end(*)" ]);
     });
 
     mmlEmitter.start();
 
-    audioContext.process(2.5);
+    audioContext.$process(2.5);
 
     mmlEmitter.stop();
 

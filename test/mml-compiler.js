@@ -143,21 +143,21 @@ describe("MMLCompiler", function() {
           obj.emit(e.type, e);
         };
 
-        var when = 0;
+        var playbackTime = 0;
 
         obj.on("note", function(e) {
-          passed.push([ "note", e.when, e.midi, e.duration, e.chordIndex ]);
-          when += 1;
+          passed.push([ "note", e.playbackTime, e.midi, e.duration, e.chordIndex ]);
+          playbackTime += 1;
         });
 
         obj.on("end", function(e) {
-          passed.push([ "end", e.when ]);
+          passed.push([ "end", e.playbackTime ]);
         });
 
         var compiled = MMLCompiler.compile({}, MMLParser.parse(mml)[0]);
 
-        while (obj._pos < compiled.length && when < 16) {
-          compiled[obj._pos](obj, when);
+        while (obj._pos < compiled.length && playbackTime < 16) {
+          compiled[obj._pos](obj, playbackTime);
           obj._pos += 1;
         }
 

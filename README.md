@@ -33,16 +33,16 @@ mml.tracks[0].on("note", noteEventHandler);
 mml.start();
 
 function noteEventHandler(e) {
-  var osc  = audioContext.createOscillator();
-  var amp  = audioContext.createGain();
-  var when = e.when;
+  var osc = audioContext.createOscillator();
+  var amp = audioContext.createGain();
+  var playbackTime = e.playbackTime;
 
-  osc.frequency.value = midicps(e.midi);
+  osc.frequency.value = e.frequency;
   osc.type = this.wave || "triangle";
-  amp.gain.setValueAtTime(0.25 * (e.volume / 16), when);
-  amp.gain.linearRampToValueAtTime(0.0, when + e.duration);
+  amp.gain.setValueAtTime(0.25 * (e.volume / 16), playbackTime);
+  amp.gain.linearRampToValueAtTime(0.0, playbackTime + e.duration);
 
-  osc.start(when);
+  osc.start(playbackTime);
   osc.connect(amp);
   amp.connect(audioContext.destination);
 
@@ -169,7 +169,7 @@ mml.tracks[0].log = function(msg) {
 
   - `"end" : (event:object)->`
     - `type:string` event name, "end"
-    - `when:number` current time
+    - `playbackTime:number` current time
 
 ### MMLTrack
 
@@ -184,8 +184,8 @@ mml.tracks[0].log = function(msg) {
   - `"note" : (event:object)->`
     - `type:string` event name, "note"
     - `index:number` index of note events
-    - `when:number` what time (in seconds) the sound should start playing
-    - `nextWhen:number` time of next note event
+    - `playbackTime:number` what time (in seconds) the sound should start playing
+    - `nextPlaybackTime:number` time of next note event
     - `midi:number` calculated midi tone number
     - `frequency:number` calculated frequency
     - `duration:number` calculated duration
@@ -201,7 +201,7 @@ mml.tracks[0].log = function(msg) {
     - `noteOff:function`
   - `"end" : (event:object)->`
     - `type:string` event name, "end"
-    - `when:number` current time
+    - `playbackTime:number` current time
 
 ### Custom Cnofiguration
 

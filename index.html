@@ -23,16 +23,16 @@
               <div class="btn btn-default" v-on="click: isPlaying ? stop() : start()">{{ isPlaying ? 'Stop' : 'Start' }}</div>
             </div>
             <pre><code>function noteEventHandler(e) {
-  var osc  = audioContext.createOscillator();
-  var amp  = audioContext.createGain();
-  var when = e.when;
+  var osc = audioContext.createOscillator();
+  var amp = audioContext.createGain();
+  var playbackTime = e.playbackTime;
 
   osc.frequency.value = e.frequency;
   osc.type = this.wave || "triangle";
-  amp.gain.setValueAtTime(0.25 * (e.volume / 16), when);
-  amp.gain.linearRampToValueAtTime(0.00 , when + e.duration);
+  amp.gain.setValueAtTime(0.25 * (e.volume / 16), playbackTime);
+  amp.gain.linearRampToValueAtTime(0.00, playbackTime + e.duration);
 
-  osc.start(when);
+  osc.start(playbackTime);
   osc.connect(amp);
   amp.connect(audioContext.destination);
 
@@ -125,16 +125,16 @@
       });
 
       function noteEventHandler(e) {
-        var osc  = audioContext.createOscillator();
-        var amp  = audioContext.createGain();
-        var when = e.when;
+        var osc = audioContext.createOscillator();
+        var amp = audioContext.createGain();
+        var playbackTime = e.playbackTime;
 
         osc.frequency.value = e.frequency;
         osc.type = this.wave || "triangle";
-        amp.gain.setValueAtTime(0.25 * (e.volume / 16), when);
-        amp.gain.linearRampToValueAtTime(0.00 , when + e.duration);
+        amp.gain.setValueAtTime(0.25 * (e.volume / 16), playbackTime);
+        amp.gain.linearRampToValueAtTime(0.00, playbackTime + e.duration);
 
-        osc.start(when);
+        osc.start(playbackTime);
         osc.connect(amp);
         amp.connect(audioContext.destination);
 

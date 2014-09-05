@@ -14,14 +14,14 @@ describe("MMLTrack", function() {
       .on("note", function(e) {
         var midi = e.midi;
 
-        e.noteOff(function(when) {
-          timeline.push([ when, "nOFF", midi ]);
+        e.noteOff(function(playbackTime) {
+          timeline.push([ playbackTime, "nOFF", midi ]);
         });
 
-        timeline.push([ e.when, "note", e.midi ]);
+        timeline.push([ e.playbackTime, "note", e.midi ]);
       })
       .on("end", function(e) {
-        timeline.push([ e.when, "end" ]);
+        timeline.push([ e.playbackTime, "end" ]);
       });
     track.len = 8;
 
