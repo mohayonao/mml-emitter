@@ -62,8 +62,8 @@ MMLEmitter.prototype._recv = function(message) {
   }
 };
 
-MMLEmitter.prototype._process = function() {
-  var currentTime = this.audioContext.currentTime;
+MMLEmitter.prototype._process = function(e) {
+  var currentTime = e.playbackTime;
 
   this.tracks.forEach(function(track) {
     track._process(currentTime);

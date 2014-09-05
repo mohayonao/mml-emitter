@@ -21,19 +21,19 @@ describe("MMLEmitter", function() {
     var timeline = [];
 
     mmlEmitter.tracks[0].on("note", function(e) {
-      timeline.push([ e.when, "note(0)", e.midi ]);
+      timeline.push([ e.playbackTime, "note(0)", e.midi ]);
     }).on("end", function(e) {
-      timeline.push([ e.when, "end(0)" ]);
+      timeline.push([ e.playbackTime, "end(0)" ]);
     });
 
     mmlEmitter.tracks[1].on("note", function(e) {
-      timeline.push([ e.when, "note(1)", e.midi ]);
+      timeline.push([ e.playbackTime, "note(1)", e.midi ]);
     }).on("end", function(e) {
-      timeline.push([ e.when, "end(1)" ]);
+      timeline.push([ e.playbackTime, "end(1)" ]);
     });
 
     mmlEmitter.on("end", function(e) {
-      timeline.push([ e.when, "end(*)" ]);
+      timeline.push([ e.playbackTime, "end(*)" ]);
     });
 
     mmlEmitter.start();

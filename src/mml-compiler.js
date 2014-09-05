@@ -102,7 +102,11 @@ compile[Syntax.End] = function() {
     } else {
       ctx._recv({
         type: "end",
-        when: currentTime
+        playbackTime: currentTime,
+
+        /* deprecated*/
+        when: currentTime,
+
       }, { bubble: true });
     }
 
@@ -136,7 +140,9 @@ compile[Syntax.Note] = function(node) {
       function noteOff(fn, offset) {
         ctx._recv({
           type: "sched",
-          when: currentTime + duration + (offset || 0),
+
+          playbackTime: currentTime + duration + (offset || 0),
+
           callback: fn
         }, { private: true });
       }
@@ -144,8 +150,13 @@ compile[Syntax.Note] = function(node) {
       ctx._recv({
         type: "note",
         index: noteIndex,
+        playbackTime: currentTime,
+        nextPlaybackTime: currentTime + totalDuration,
+
+        /* deprecated */
         when: currentTime,
         nextWhen: currentTime + totalDuration,
+
         midi: midi,
         frequency: frequency,
         noteNum: note.noteNum,

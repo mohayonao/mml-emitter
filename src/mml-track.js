@@ -61,7 +61,7 @@ MMLTrack.prototype._recv = function(message, opts) {
   opts = opts || {};
 
   if (message.type === "sched") {
-    this.sched(message.when, message.callback);
+    this.sched(message.playbackTime, message.callback);
   }
   if (!opts.private) {
     this.emit(message.type, message);
@@ -71,8 +71,8 @@ MMLTrack.prototype._recv = function(message, opts) {
   }
 };
 
-MMLTrack.prototype.sched = function(when, fn) {
-  this._sched.push([ when, fn ]);
+MMLTrack.prototype.sched = function(playbackTime, fn) {
+  this._sched.push([ playbackTime, fn ]);
   this._sched.sort(schedSorter);
 
   return this;
