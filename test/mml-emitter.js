@@ -13,7 +13,7 @@ describe("MMLEmitter", function() {
   });
 
   it("should work", function() {
-    var audioContext = new AudioContextShim();
+    var audioContext = new AudioContext();
     var mmlEmitter = new MMLEmitter(audioContext, "cege; @($len) l8>ccccdddd");
 
     mmlEmitter.len = 8;
@@ -38,7 +38,7 @@ describe("MMLEmitter", function() {
 
     mmlEmitter.start();
 
-    audioContext.process(2.5);
+    audioContext.$process(2.5);
 
     mmlEmitter.stop();
 
