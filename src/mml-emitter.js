@@ -63,7 +63,7 @@ MMLEmitter.prototype._recv = function(message) {
 };
 
 MMLEmitter.prototype._process = function(e) {
-  var currentTime = e.playbackTime;
+  var currentTime = e.playbackTime || /* istanbul ignore next */ this.audioContext.currentTime;
 
   this.tracks.forEach(function(track) {
     track._process(currentTime);
