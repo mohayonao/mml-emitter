@@ -1,7 +1,7 @@
 {
   "name": "MMLEmitter",
   "description": "MML(Music Macro Language) event sequencer based on Web Audio API",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "author": "Nao Yonamine <mohayonao@gmail.com>",
   "license": "MIT",
   "repository": {
