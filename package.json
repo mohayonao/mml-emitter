@@ -31,6 +31,6 @@
     "jshint-stylish": "^0.4.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.0.0",
-    "web-audio-mock": "^0.1.9"
+    "web-audio-test-api": "^0.1.14"
   }
 }
