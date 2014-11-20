@@ -2,7 +2,7 @@
 
 var MMLEmitter = require("./mml-emitter");
 
-MMLEmitter.version = "0.2.6";
+MMLEmitter.version = "0.2.7";
 
 /* istanbul ignore next */
 if (typeof global.window !== "undefined") {
