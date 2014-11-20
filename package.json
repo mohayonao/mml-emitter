@@ -20,15 +20,17 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "browserify": "^6.3.2",
     "chai": "^1.9.1",
     "gulp": "^3.8.7",
-    "gulp-browserify": "^0.5.0",
     "gulp-istanbul": "^0.2.1",
     "gulp-jshint": "^1.8.4",
     "gulp-mocha": "^0.5.2",
     "gulp-rename": "^1.2.0",
     "gulp-uglify": "^0.3.1",
     "jshint-stylish": "^0.4.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.0.0",
     "web-audio-mock": "^0.1.9"
   }
 }
