@@ -3,6 +3,6 @@
 global.chai   = require("chai");
 global.expect = global.chai.expect;
 
-require("web-audio-mock");
+require("web-audio-test-api");
 
 global.MMLEmitter = require("../../");
