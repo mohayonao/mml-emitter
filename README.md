@@ -1,27 +1,34 @@
-# MMLEmitter
-[![Build Status](http://img.shields.io/travis/mohayonao/MMLEmitter.svg?style=flat)](https://travis-ci.org/mohayonao/MMLEmitter)
-[![Coverage Status](http://img.shields.io/coveralls/mohayonao/MMLEmitter.svg?style=flat)](https://coveralls.io/r/mohayonao/MMLEmitter?branch=master)
-[![Dependency Status](http://img.shields.io/david/mohayonao/MMLEmitter.svg?style=flat)](https://david-dm.org/mohayonao/MMLEmitter)
-[![devDependency Status](http://img.shields.io/david/dev/mohayonao/MMLEmitter.svg?style=flat)](https://david-dm.org/mohayonao/MMLEmitter)
+# mml-emitter
+[![Bower](https://img.shields.io/bower/v/mml-emitter.svg?style=flat)](https://github.com/mohayonao/mml-emitter)
+[![Build Status](http://img.shields.io/travis/mohayonao/mml-emitter.svg?style=flat)](https://travis-ci.org/mohayonao/mml-emitter)
+[![Coverage Status](http://img.shields.io/coveralls/mohayonao/mml-emitter.svg?style=flat)](https://coveralls.io/r/mohayonao/mml-emitter?branch=master)
+[![Dependency Status](http://img.shields.io/david/mohayonao/mml-emitter.svg?style=flat)](https://david-dm.org/mohayonao/mml-emitter)
+[![devDependency Status](http://img.shields.io/david/dev/mohayonao/mml-emitter.svg?style=flat)](https://david-dm.org/mohayonao/mml-emitter)
 
-> **MMLEmitter** is a MML(Music Macro Language) event sequencer based on Web Audio API.
+> MML(Music Macro Language) event sequencer based on Web Audio API
 
 ## Online Playground
 
-  - http://mohayonao.github.io/MMLEmitter/
+  - http://mohayonao.github.io/mml-emitter/
 
 ## Install
 
-##### browser
+##### Downloads
 
-  - [MMLEmitter.js](http://mohayonao.github.io/MMLEmitter/build/MMLEmitter.js)
-  - [MMLEmitter.min.js](http://mohayonao.github.io/MMLEmitter/build/MMLEmitter.min.js)
+  - [mml-emitter.js](http://mohayonao.github.io/mml-emitter/build/mml-emitter.js)
+  - [mml-emitter.min.js](http://mohayonao.github.io/mml-emitter/build/mml-emitter.min.js)
 
-```html
-<script src="/path/to/MMLEmitter.js"></script>
+##### Bower
+
+```
+$ bower install mml-emitter
 ```
 
 ## Usage
+
+```html
+<script src="/path/to/mml-emitter.js"></script>
+```
 
 ```javascript
 var mml = new MMLEmitter(

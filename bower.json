@@ -1,0 +1,29 @@
+{
+  "name": "mml-emitter",
+  "main": "build/mml-emitter.js",
+  "version": "0.2.8",
+  "homepage": "https://github.com/mohayonao/mml-emitter",
+  "authors": [
+    "mohayonao <mohayonao@gmail.com>"
+  ],
+  "description": "MML(Music Macro Language) event sequencer based on Web Audio API",
+  "keywords": [
+    "mml",
+    "music",
+    "sequencer",
+    "event",
+    "web audio api"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "src",
+    "test",
+    "coverage",
+    "gulpfile.js",
+    "index.html",
+    "index.js"
+  ]
+}

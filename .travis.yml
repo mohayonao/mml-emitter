@@ -3,7 +3,7 @@ node_js:
   - "0.10"
 env:
   global:
-    - secure: "eKYdlW4LMpVQkF095K9d48vvDX3gW2KNXF8qH88sRjyCZqVk5ZBA2T1tA35d5eio6JgWXTKgAtbwsl2DFmmpotMHfv01cdlUoY1EuzSRGoIN07RiG2oFWb5PEzIWKYVYLOPE6ieq8IMd1yPPp/g3Tvl4V8H6a5nyMbMN4HO4qmU="
+    - secure: "QVKuNy9o+aP4a7mKGZDIQknbS3Xwwd5p4Lp2jWYjm8A6QSDczYN0xBbOtI+4f3ZVP3pl1rlv1nDz5Qnw3H9n02P9vrtgmcGv0xayKCUxqKqsTGxN4sCJO4VKmRKm1fOW7DlXKi2TxhloJLo1Jp/95zqsoZ7U9O9cvxGSFNKd32E="
 script:
   - npm run travis
 after_success:
