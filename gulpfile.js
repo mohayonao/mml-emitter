@@ -36,13 +36,13 @@ gulp.task("cover", function(cb) {
 gulp.task("build", function() {
   return browserify("./index.js")
     .bundle()
-    /* MMLEmitter.js */
-    .pipe(source("MMLEmitter.js"))
+    /* mml-emitter.js */
+    .pipe(source("mml-emitter.js"))
     .pipe(gulp.dest("build"))
-    /* MMLEmitter.min.js */
+    /* mml-emitter.min.js */
     .pipe(buffer())
     .pipe(uglify())
-    .pipe(rename("MMLEmitter.min.js"))
+    .pipe(rename("mml-emitter.min.js"))
     .pipe(gulp.dest("build"));
 });
 
