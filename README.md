@@ -1,4 +1,5 @@
 # mml-emitter
+[![Bower](https://img.shields.io/bower/v/mml-emitter.svg?style=flat)](https://github.com/mohayonao/mml-emitter)
 [![Build Status](http://img.shields.io/travis/mohayonao/mml-emitter.svg?style=flat)](https://travis-ci.org/mohayonao/mml-emitter)
 [![Coverage Status](http://img.shields.io/coveralls/mohayonao/mml-emitter.svg?style=flat)](https://coveralls.io/r/mohayonao/mml-emitter?branch=master)
 [![Dependency Status](http://img.shields.io/david/mohayonao/mml-emitter.svg?style=flat)](https://david-dm.org/mohayonao/mml-emitter)
@@ -12,16 +13,22 @@
 
 ## Install
 
-##### browser
+##### Downloads
 
   - [mml-emitter.js](http://mohayonao.github.io/mml-emitter/build/mml-emitter.js)
   - [mml-emitter.min.js](http://mohayonao.github.io/mml-emitter/build/mml-emitter.min.js)
 
-```html
-<script src="/path/to/mml-emitter.js"></script>
+##### Bower
+
+```
+$ bower install mml-emitter
 ```
 
 ## Usage
+
+```html
+<script src="/path/to/mml-emitter.js"></script>
+```
 
 ```javascript
 var mml = new MMLEmitter(
