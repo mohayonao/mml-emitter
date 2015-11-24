@@ -1,2 +1,2 @@
 --reporter spec
---require test/bootstrap/bootstrap.js
+--recursive
