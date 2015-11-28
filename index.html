@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MMLEmitter</title>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href=//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css>
+  <style>
+    .badges { margin:5px 0 }
+    .mml { font-family:Menlo,Monaco,Consolas,"Courier New",monospace; white-space:pre; overflow:auto; margin:15px 0 }
+    #code { padding:0; margin:0; background:white; border:none }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MMLEmitter</h1>
+    <div class="badges">
+      <a href="https://travis-ci.org/mohayonao/mml-emitter"><img src="http://img.shields.io/travis/mohayonao/mml-emitter.svg?style=flat-square"/></a>
+      <a href="https://www.npmjs.org/package/mml-emitter"><img src="http://img.shields.io/npm/v/mml-emitter.svg?style=flat-square"/></a>
+      <a href="http://mohayonao.mit-license.org/"><img src="http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"/></a>
+    </div>
+    <p>mml-emitter is a MML(Music Macro Language) event sequencer for Web Audio API.</p>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">example</h3>
+          </div>
+          <div class="panel-body">
+            <pre class="prettyprint" id="code"></pre>
+          </div>
+        </div>
+      </div>
+      <div id="app" class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">demo</h3>
+          </div>
+          <div class="panel-body">
+            <div v-for="mml in demo">
+              <div>
+                <div class="mml">{{ mml }}</div>
+                <button class="btn btn-default btn-sm" v-on:click="play(mml)">PLAY</button>
+                <button class="btn btn-default btn-sm" v-on:click="stop()">STOP</button>
+                <hr />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/vue/1.0.10/vue.min.js"></script>
+  <script src="./build/mml-emitter.js"></script>
+  <script>
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+
+  var mmlEmitter = null;
+  var audioContext = new AudioContext();
+
+  </script>
+  <script id="example">
+  function play(mml) {
+    var config = { context: audioContext };
+
+    mmlEmitter = new MMLEmitter(mml, config);
+
+    mmlEmitter.on("note", function(items) {
+      console.log("NOTE: " + JSON.stringify(items));
+      playNote(items);
+    });
+    mmlEmitter.on("end", function(items) {
+      console.log("END : " + JSON.stringify(items));
+      mmlEmitter.stop();
+    });
+
+    mmlEmitter.start();
+  }
+
+  function playNote(items) {
+    var t0 = items.playbackTime;
+    var t1 = t0 + items.gateTime;
+    var t2 = t0 + items.duration;
+    var osc = audioContext.createOscillator();
+    var osc2 = audioContext.createOscillator();
+    var amp = audioContext.createGain();
+    var volume = 0.25 * items.volume;
+
+    osc.frequency.value = items.frequency;
+    osc.detune.setValueAtTime(+12, t0);
+    osc.detune.linearRampToValueAtTime(+1, t1);
+    osc.start(t0);
+    osc.stop(t2);
+    osc.connect(amp);
+
+    osc2.frequency.value = items.frequency;
+    osc2.detune.setValueAtTime(-12, t0);
+    osc2.detune.linearRampToValueAtTime(-1, t1);
+    osc2.start(t0);
+    osc2.stop(t2);
+    osc2.connect(amp);
+
+    amp.gain.setValueAtTime(volume, t0);
+    amp.gain.setValueAtTime(volume, t1);
+    amp.gain.exponentialRampToValueAtTime(1e-3, t2);
+    amp.connect(audioContext.destination);
+  }
+  </script>
+  <script>
+  window.addEventListener("DOMContentLoaded", function() {
+    "use strict";
+
+    function chore() {
+      if (chore.done) {
+        return;
+      }
+      chore.done = true;
+
+      var bufSrc = audioContext.createBufferSource();
+
+      bufSrc.start(audioContext.currentTime);
+      bufSrc.stop(audioContext.currentTime);
+      bufSrc.connect(audioContext.destination);
+      bufSrc.disconnect();
+    }
+
+    function toArray(arrayLike) {
+      var result = [];
+
+      for (var i = 0; i < arrayLike.length; i++) {
+        result.push(arrayLike[i]);
+      }
+
+      return result;
+    }
+
+    var $ = document.getElementById.bind(document);
+    var demo = toArray(document.querySelectorAll("script[type='text/mml']")).map(function(x) {
+      return x.textContent.replace(/^\s+/gm, "");
+    });
+
+    $("code").textContent = $("example").textContent;
+
+    new Vue({
+      el: "#app",
+      data: {
+        demo: demo
+      },
+      methods: {
+        play: function(mml) {
+          chore();
+
+          if (mmlEmitter) {
+            mmlEmitter.stop();
+          }
+
+          play(mml);
+        },
+        stop: function() {
+          if (mmlEmitter) {
+            mmlEmitter.stop();
+          }
+          mmlEmitter = null;
+        }
+      }
+    });
+
+    prettyPrint();
+  });
+  </script>
+  <script type="text/mml">
+  // Little Serenade
+  // J.Haydn
+  t120 l8 q4
+  /: ab-< c4c4c4 c4.faf fedc>b-4 [gb-]2 [fa]4 agb-a<c>b- <c+dc>b-ag f2[ea]g f4r4 :/
+  /: [fa][eg] [eg]2[gb-][fa] [fa]2<c>b b<dfd>b<d c4.>b-
+     ab-< c4c4c4 c4.faf fedc>b-4 [gb-]2 [fa]4 agb-a<c>b- <c+dc>b-ag f2[ea]g f4r4 :/
+  ;
+  t120 l8 o4 q7 v10
+  /: r4 f<c>a<c>a<c> f<c>a<c>a<c> g<c>b-<c>b-<c> [e<c]2 [f<c]4 [b-<d]2.^2 [>b-<b-]4 [ca]2[cb-]4 [fa]4 >f4< :/
+  /: r4 c4<c4r4> c4<c4r4> [cdf]4[cdf]4[cdf]4 [ce]4r4
+     r4 f<c>a<c>a<c> f<c>a<c>a<c> g<c>b-<c>b-<c> [e<c]2 [f<c]4 [b-<d]2.^2 [>b-<b-]4 [ca]2[cb-]4 [fa]4 >f4< :/
+  ;
+  </script>
+  <script type="text/mml">
+  // Turkish March
+  // W.A.Mozart
+  q6 v8
+  /: o4 l16 bag+a<
+     c8r8dc>b<c e8r8fed+e bag+abag+a <c4>a8<c8>
+     l8 [gb][f+a][eg][f+a] [gb][f+a][eg][f+a] [gb][f+a][eg][d+f+] e4 :/
+  /: o5 [ce][df] [eg][eg]a16g16f16e16 [>b<d]4[ce][df] [eg][eg]a16g16f16e16 [>b<d]4[>a<c][>b<d]
+     [ce][ce] f16e16d16c16 >[g+b]4[a<c][b<d] <[ce][ce]f16e16d16c16 >[g+b]4
+     l16 bag+a <c8r8dc>b<c e8r8fed+e bag+abag+a l8<c4>ab <c>bag+ aefd c4>b8.a32b32 a4 :/
+  ;
+  q4
+  /: o3 l8 r4
+     a<[ce][ce][ce]> a<[ce][ce][ce]> a<[ce]>a<[ce]> a<[ce][ce][ce]>
+     e[b<e][b<e][b<e] e[b<e][b<e][b<e] e[b<e]>b<b e4 :/
+  /: o3 r4 c<c>e<e>g<g>r4 c<c>e<e>g4r4 >a<ac<c>e<e>r4 >a<ac<c>e4r4
+     a<[ce][ce][ce]> a<[ce][ce][ce]> a<[ce]>a<[ce]> f[a<d+][a<d+][a<d+]
+     e[ae]d[fb] c[ea]d[fb] [ea][ea][eg+][eg+] [>a<a]4 :/
+  ;
+  </script>
+</body>
+</html>
