@@ -1,7 +1,7 @@
 {
   "name": "mml-emitter",
   "description": "MML(Music Macro Language) event sequencer for Web Audio API",
-  "version": "0.2.8",
+  "version": "0.4.0",
   "author": "Nao Yonamine <mohayonao@gmail.com>",
   "bugs": {
     "url": "https://github.com/mohayonao/mml-emitter/issues"
@@ -26,6 +26,12 @@
     "uglify-js": "^2.6.1",
     "xtend": "^4.0.1"
   },
+  "files": [
+    "package.json",
+    "README.md",
+    "index.js",
+    "lib"
+  ],
   "homepage": "http://mohayonao.github.io/mml-emitter/",
   "keywords": [
     "WebAudioAPI",
