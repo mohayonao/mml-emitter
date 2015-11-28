@@ -82,17 +82,17 @@
     var t0 = items.playbackTime;
     var t1 = t0 + items.gateTime;
     var t2 = t0 + items.duration;
-    var osc = audioContext.createOscillator();
+    var osc1 = audioContext.createOscillator();
     var osc2 = audioContext.createOscillator();
     var amp = audioContext.createGain();
     var volume = 0.25 * items.volume;
 
-    osc.frequency.value = items.frequency;
-    osc.detune.setValueAtTime(+12, t0);
-    osc.detune.linearRampToValueAtTime(+1, t1);
-    osc.start(t0);
-    osc.stop(t2);
-    osc.connect(amp);
+    osc1.frequency.value = items.frequency;
+    osc1.detune.setValueAtTime(+12, t0);
+    osc1.detune.linearRampToValueAtTime(+1, t1);
+    osc1.start(t0);
+    osc1.stop(t2);
+    osc1.connect(amp);
 
     osc2.frequency.value = items.frequency;
     osc2.detune.setValueAtTime(-12, t0);
