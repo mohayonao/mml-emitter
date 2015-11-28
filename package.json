@@ -6,7 +6,11 @@
   "bugs": {
     "url": "https://github.com/mohayonao/mml-emitter/issues"
   },
-  "dependencies": {},
+  "dependencies": {
+    "mml-iterator": "^0.2.0",
+    "strip-comments": "^0.4.1",
+    "web-audio-scheduler": "^1.0.0"
+  },
   "devDependencies": {
     "babel": "^5.8.34",
     "babel-eslint": "^4.1.5",
@@ -20,7 +24,7 @@
     "sinon": "^1.17.2",
     "tickable-timer": "^0.3.0",
     "uglify-js": "^2.6.1",
-    "web-audio-test-api": "^0.3.6"
+    "xtend": "^4.0.1"
   },
   "homepage": "http://mohayonao.github.io/mml-emitter/",
   "keywords": [
