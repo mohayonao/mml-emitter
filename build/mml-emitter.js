@@ -1,1235 +1,2415 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-module.exports = require("./src/");
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.MMLEmitter = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+module.exports = require("./lib");
 
-},{"./src/":7}],2:[function(require,module,exports){
+},{"./lib":5}],2:[function(require,module,exports){
 "use strict";
 
-function config(obj) {
-  obj = Object.create(obj || {});
-
-  var defaults = {
-    defaultTempo: 120,
-    minTempo: 30,
-    maxTempo: 240,
-    defaultOctave: 5,
-    minOctave: 0,
-    maxOctave: 9,
-    defaultLength: 4,
-    minLength: 1,
-    maxLength: 64,
-    defaultQuantize: 6,
-    minQuantize: 0,
-    maxQuantize: 8,
-    defaultVolume: 12,
-    minVolume: 0,
-    maxVolume: 16,
-    octaveShiftDirection: 1,
-    A4Frequency: 440.0,
-    A4Index: 69,
-  };
-
-  Object.keys(defaults).forEach(function(key) {
-    if (typeof obj[key] !== "number") {
-      obj[key] = defaults[key];
-    }
-  });
-
-  return obj;
-}
-
-module.exports.build = config;
-
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = {
+  interval: 0.25,
+  A4Frequency: 440,
+  A4Index: 69
+};
+module.exports = exports["default"];
 },{}],3:[function(require,module,exports){
 "use strict";
 
-function Emitter() {
-  this._callbacks = {};
-}
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-Emitter.prototype.hasListeners = function(event) {
-  return this._callbacks.hasOwnProperty(event);
-};
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-Emitter.prototype.listeners = function(event) {
-  return this.hasListeners(event) ? this._callbacks[event].slice() : [];
-};
+var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-Emitter.prototype.on = function(event, listener) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-  if (!this.hasListeners(event)) {
-    this._callbacks[event] = [];
-  }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  this._callbacks[event].push(listener);
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  return this;
-};
+var _events = require("events");
 
-Emitter.prototype.addListener = Emitter.prototype.on;
+var _mmlIterator = require("mml-iterator");
 
-Emitter.prototype.once = function(event, listener) {
+var _mmlIterator2 = _interopRequireDefault(_mmlIterator);
 
-  function fn(arg) {
-    this.off(event, fn);
-    listener.call(this, arg);
-  }
+var _webAudioScheduler = require("web-audio-scheduler");
 
-  fn.listener = listener;
+var _webAudioScheduler2 = _interopRequireDefault(_webAudioScheduler);
 
-  this.on(event, fn);
+var _DefaultConfig = require("./DefaultConfig");
 
-  return this;
-};
+var _DefaultConfig2 = _interopRequireDefault(_DefaultConfig);
 
-Emitter.prototype.off = function(event, listener) {
+var _MMLSequencer = require("./MMLSequencer");
 
-  if (typeof listener === "undefined") {
-    if (typeof event === "undefined") {
-      this._callbacks = {};
-    } else if (this.hasListeners(event)) {
-      delete this._callbacks[event];
-    }
-  } else if (this.hasListeners(event)) {
-    this._callbacks[event] = this._callbacks[event].filter(function(fn) {
-      return !(fn === listener || fn.listener === listener);
+var _MMLSequencer2 = _interopRequireDefault(_MMLSequencer);
+
+var _stripComments = require("strip-comments");
+
+var _stripComments2 = _interopRequireDefault(_stripComments);
+
+var _utilsXtend = require("./utils/xtend");
+
+var _utilsXtend2 = _interopRequireDefault(_utilsXtend);
+
+var _utilsToFrequency = require("./utils/toFrequency");
+
+var _utilsToFrequency2 = _interopRequireDefault(_utilsToFrequency);
+
+var MMLEmitter = (function (_EventEmitter) {
+  _inherits(MMLEmitter, _EventEmitter);
+
+  function MMLEmitter(source) {
+    var _this = this;
+
+    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+    _classCallCheck(this, MMLEmitter);
+
+    _get(Object.getPrototypeOf(MMLEmitter.prototype), "constructor", this).call(this);
+
+    var scheduler = config.scheduler || new _webAudioScheduler2["default"](config);
+    var trackSources = (0, _stripComments2["default"])(source).split(";").filter(function (source) {
+      return !!source.trim();
     });
+
+    this.config = (0, _utilsXtend2["default"])(_DefaultConfig2["default"], config);
+    this.tracks = trackSources.map(function () {
+      return new _events.EventEmitter();
+    });
+    this.scheduler = scheduler;
+
+    this._startTime = 0;
+    this._sequencers = trackSources.map(function (source) {
+      var iter = new _mmlIterator2["default"](source, _this.config);
+      var sequencer = new _MMLSequencer2["default"](iter, _this.config.interval);
+
+      sequencer.done = false;
+
+      return sequencer;
+    });
+    this._done = false;
   }
 
-  return this;
-};
+  _createClass(MMLEmitter, [{
+    key: "start",
+    value: function start() {
+      var _this2 = this;
 
-Emitter.prototype.removeListener = Emitter.prototype.off;
+      this._startTime = this.scheduler.currentTime;
+      this.scheduler.start(function (_ref) {
+        var playbackTime = _ref.playbackTime;
 
-Emitter.prototype.removeAllListeners = Emitter.prototype.off;
+        _this2._progress(playbackTime);
+      });
 
-Emitter.prototype.emit = function(event, arg) {
-  this.listeners(event).forEach(function(fn) {
-    fn.call(this, arg);
-  }, this);
-};
+      return this;
+    }
+  }, {
+    key: "stop",
+    value: function stop() {
+      this.scheduler.stop(true);
 
-module.exports = Emitter;
+      return this;
+    }
+  }, {
+    key: "_progress",
+    value: function _progress(playbackTime) {
+      var _this3 = this;
 
-},{}],4:[function(require,module,exports){
+      if (this._done) {
+        return;
+      }
+
+      this._sequencers.forEach(function (sequencer, trackNumber) {
+        if (sequencer.done) {
+          return;
+        }
+
+        var items = sequencer.next();
+
+        _this3._emitNoteEvent(items.value, trackNumber);
+
+        if (items.done) {
+          _this3.tracks[trackNumber].emit("end", { type: "end", playbackTime: playbackTime });
+          sequencer.done = true;
+        }
+      });
+
+      this._done = this._sequencers.every(function (sequencer) {
+        return sequencer.done;
+      });
+
+      if (this._done) {
+        this.emit("end", { type: "end", playbackTime: playbackTime });
+      }
+
+      var nextPlaybackTime = playbackTime + this.config.interval;
+
+      this.scheduler.insert(nextPlaybackTime, function (_ref2) {
+        var playbackTime = _ref2.playbackTime;
+
+        _this3._progress(playbackTime);
+      });
+    }
+  }, {
+    key: "_emitNoteEvent",
+    value: function _emitNoteEvent(noteEvents, trackNumber) {
+      var _this4 = this;
+
+      noteEvents.forEach(function (noteEvent) {
+        var playbackTime = _this4._startTime + noteEvent.time;
+        var duration = noteEvent.duration;
+        var gateTime = noteEvent.gateTime;
+        var volume = noteEvent.volume;
+
+        noteEvent.noteNumbers.forEach(function (noteNumber) {
+          var frequency = (0, _utilsToFrequency2["default"])(noteNumber, _this4.config.A4Index, _this4.config.A4Frequency);
+          var event = { type: "note", playbackTime: playbackTime, trackNumber: trackNumber, noteNumber: noteNumber, frequency: frequency, duration: duration, gateTime: gateTime, volume: volume };
+
+          _this4.emit("note", event);
+          _this4.tracks[trackNumber].emit("note", event);
+        });
+      });
+    }
+  }]);
+
+  return MMLEmitter;
+})(_events.EventEmitter);
+
+exports["default"] = MMLEmitter;
+module.exports = exports["default"];
+},{"./DefaultConfig":2,"./MMLSequencer":4,"./utils/toFrequency":6,"./utils/xtend":7,"events":9,"mml-iterator":17,"strip-comments":30,"web-audio-scheduler":31}],4:[function(require,module,exports){
 "use strict";
 
-function startsWithDollar(id) {
-  return id.charAt(0) === "$";
-}
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-function notHasOwnProperty(id) {
-  return !this.hasOwnProperty(id);
-}
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function defineSharedVariable(id) {
-  var name = id.substr(1);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  Object.defineProperty(this, id, {
-    get: function() {
-      return (this._shared && this._shared[name]) || null;
-    },
-    set: function(value) {
-      if (this._shared) {
-        this._shared[name] = value;
-      }
-    }
-  });
-}
+var MMLSequencer = (function () {
+  function MMLSequencer(iter, interval) {
+    _classCallCheck(this, MMLSequencer);
 
-function compile(ctx, expr) {
-  var fn;
-
-  try {
-    fn = new Function("return " + expr.expr + ";"); // jshint ignore: line
-  } catch (e) {
-    throw new Error("Error parsing expression: " + expr.expr);
+    this.iter = iter;
+    this.interval = interval;
+    this._playbackTime = 0;
+    this._noteEvent = null;
+    this._doneTime = 0;
+    this._done = false;
   }
 
-  expr.variables
-    .filter(startsWithDollar)
-    .filter(notHasOwnProperty, ctx)
-    .forEach(defineSharedVariable, ctx);
+  _createClass(MMLSequencer, [{
+    key: "next",
+    value: function next() {
+      var t0 = this._playbackTime + this.interval;
+
+      if (this._done && this._doneTime < t0) {
+        return { done: true, value: [] };
+      }
+
+      var result = [];
+      var noteEvent = undefined;
+
+      while ((noteEvent = this._next(t0)) !== null) {
+        result.push(noteEvent);
+      }
+
+      this._playbackTime = t0;
+
+      return { done: false, value: result };
+    }
+  }, {
+    key: "_next",
+    value: function _next(t0) {
+      if (this._noteEvent) {
+        return this._nextNoteEvent(t0);
+      }
+
+      var items = this.iter.next();
+
+      if (items.done) {
+        this._done = true;
+        return null;
+      }
+
+      this._noteEvent = items.value;
+      this._doneTime = this._noteEvent.time + this._noteEvent.duration;
+
+      return this._next(t0);
+    }
+  }, {
+    key: "_nextNoteEvent",
+    value: function _nextNoteEvent(t0) {
+      if (t0 <= this._noteEvent.time) {
+        return null;
+      }
+
+      var noteEvent = this._noteEvent;
+
+      this._noteEvent = null;
+
+      return noteEvent;
+    }
+  }]);
+
+  return MMLSequencer;
+})();
+
+exports["default"] = MMLSequencer;
+module.exports = exports["default"];
+},{}],5:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _MMLEmitter = require("./MMLEmitter");
+
+var _MMLEmitter2 = _interopRequireDefault(_MMLEmitter);
+
+exports["default"] = _MMLEmitter2["default"];
+module.exports = exports["default"];
+},{"./MMLEmitter":3}],6:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = toFrequency;
+
+function toFrequency(noteNumber, a4Index, a4Frequency) {
+  return a4Frequency * Math.pow(2, (noteNumber - a4Index) / 12);
+}
+
+module.exports = exports["default"];
+},{}],7:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = xtend;
+
+function xtend() {
+  var result = {};
+
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  args.forEach(function (props) {
+    if (props && typeof props === "object") {
+      Object.keys(props).forEach(function (key) {
+        result[key] = props[key];
+      });
+    }
+  });
+
+  return result;
+}
+
+module.exports = exports["default"];
+},{}],8:[function(require,module,exports){
+/*!
+ * cr <https://github.com/jonschlinkert/cr>
+ *
+ * Copyright (c) 2015, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+'use strict';
+
+module.exports = function(str) {
+  if (typeof str !== 'string') {
+    throw new TypeError('expected a string');
+  }
+  return str.replace(/\r\n|\r/g, '\n');
+};
+
+module.exports.strip = function(str) {
+  if (typeof str !== 'string') {
+    throw new TypeError('expected a string');
+  }
+  return str.split('\r').join('');
+};
+
+},{}],9:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+function EventEmitter() {
+  this._events = this._events || {};
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+EventEmitter.defaultMaxListeners = 10;
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!isNumber(n) || n < 0 || isNaN(n))
+    throw TypeError('n must be a positive number');
+  this._maxListeners = n;
+  return this;
+};
+
+EventEmitter.prototype.emit = function(type) {
+  var er, handler, len, args, i, listeners;
+
+  if (!this._events)
+    this._events = {};
+
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events.error ||
+        (isObject(this._events.error) && !this._events.error.length)) {
+      er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      }
+      throw TypeError('Uncaught, unspecified "error" event.');
+    }
+  }
+
+  handler = this._events[type];
+
+  if (isUndefined(handler))
+    return false;
+
+  if (isFunction(handler)) {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        args = Array.prototype.slice.call(arguments, 1);
+        handler.apply(this, args);
+    }
+  } else if (isObject(handler)) {
+    args = Array.prototype.slice.call(arguments, 1);
+    listeners = handler.slice();
+    len = listeners.length;
+    for (i = 0; i < len; i++)
+      listeners[i].apply(this, args);
+  }
+
+  return true;
+};
+
+EventEmitter.prototype.addListener = function(type, listener) {
+  var m;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events)
+    this._events = {};
+
+  // To avoid recursion in the case that type === "newListener"! Before
+  // adding it to the listeners, first emit "newListener".
+  if (this._events.newListener)
+    this.emit('newListener', type,
+              isFunction(listener.listener) ?
+              listener.listener : listener);
+
+  if (!this._events[type])
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  else if (isObject(this._events[type]))
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  else
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+
+  // Check for listener leak
+  if (isObject(this._events[type]) && !this._events[type].warned) {
+    if (!isUndefined(this._maxListeners)) {
+      m = this._maxListeners;
+    } else {
+      m = EventEmitter.defaultMaxListeners;
+    }
+
+    if (m && m > 0 && this._events[type].length > m) {
+      this._events[type].warned = true;
+      console.error('(node) warning: possible EventEmitter memory ' +
+                    'leak detected. %d listeners added. ' +
+                    'Use emitter.setMaxListeners() to increase limit.',
+                    this._events[type].length);
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
+    }
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  var fired = false;
+
+  function g() {
+    this.removeListener(type, g);
+
+    if (!fired) {
+      fired = true;
+      listener.apply(this, arguments);
+    }
+  }
+
+  g.listener = listener;
+  this.on(type, g);
+
+  return this;
+};
+
+// emits a 'removeListener' event iff the listener was removed
+EventEmitter.prototype.removeListener = function(type, listener) {
+  var list, position, length, i;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events || !this._events[type])
+    return this;
+
+  list = this._events[type];
+  length = list.length;
+  position = -1;
+
+  if (list === listener ||
+      (isFunction(list.listener) && list.listener === listener)) {
+    delete this._events[type];
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+
+  } else if (isObject(list)) {
+    for (i = length; i-- > 0;) {
+      if (list[i] === listener ||
+          (list[i].listener && list[i].listener === listener)) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0)
+      return this;
+
+    if (list.length === 1) {
+      list.length = 0;
+      delete this._events[type];
+    } else {
+      list.splice(position, 1);
+    }
+
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  var key, listeners;
+
+  if (!this._events)
+    return this;
+
+  // not listening for removeListener, no need to emit
+  if (!this._events.removeListener) {
+    if (arguments.length === 0)
+      this._events = {};
+    else if (this._events[type])
+      delete this._events[type];
+    return this;
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    for (key in this._events) {
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = {};
+    return this;
+  }
+
+  listeners = this._events[type];
+
+  if (isFunction(listeners)) {
+    this.removeListener(type, listeners);
+  } else if (listeners) {
+    // LIFO order
+    while (listeners.length)
+      this.removeListener(type, listeners[listeners.length - 1]);
+  }
+  delete this._events[type];
+
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  var ret;
+  if (!this._events || !this._events[type])
+    ret = [];
+  else if (isFunction(this._events[type]))
+    ret = [this._events[type]];
+  else
+    ret = this._events[type].slice();
+  return ret;
+};
+
+EventEmitter.prototype.listenerCount = function(type) {
+  if (this._events) {
+    var evlistener = this._events[type];
+
+    if (isFunction(evlistener))
+      return 1;
+    else if (evlistener)
+      return evlistener.length;
+  }
+  return 0;
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  return emitter.listenerCount(type);
+};
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
+},{}],10:[function(require,module,exports){
+'use strict';
+
+var isObject = require('is-extendable');
+
+module.exports = function extend(o/*, objects*/) {
+  if (!isObject(o)) { o = {}; }
+
+  var len = arguments.length;
+  for (var i = 1; i < len; i++) {
+    var obj = arguments[i];
+
+    if (isObject(obj)) {
+      assign(o, obj);
+    }
+  }
+  return o;
+};
+
+function assign(a, b) {
+  for (var key in b) {
+    if (hasOwn(b, key)) {
+      a[key] = b[key];
+    }
+  }
+}
+
+/**
+ * Returns true if the given `key` is an own property of `obj`.
+ */
+
+function hasOwn(obj, key) {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+},{"is-extendable":16}],11:[function(require,module,exports){
+'use strict';
+
+var extend = require('extend-shallow');
+var Block = require('./lib/block');
+var Line = require('./lib/line');
+var utils = require('./lib/utils');
+
+/**
+ * Extract comments from the given `string`.
+ *
+ * ```js
+ * extract(str, options);
+ * ```
+ * @param {String} `string`
+ * @param {Object} `options` Pass `first: true` to return after the first comment is found.
+ * @return {String}
+ * @api public
+ */
+
+function comments(str, options, fn) {
+  if (typeof str !== 'string') {
+    throw new TypeError('expected a string');
+  }
+  return block(str, options, fn)
+    .concat(line(str, options, fn))
+    .sort(compare);
+}
+
+/**
+ * Extract block comments from the given `string`.
+ *
+ * ```js
+ * extract.block(str, options);
+ * ```
+ * @param {String} `string`
+ * @param {Object} `options` Pass `first: true` to return after the first comment is found.
+ * @return {String}
+ * @api public
+ */
+
+function block(str, options, fn) {
+  return factory('/*', '*/', Block)(str, options, fn);
+}
+
+/**
+ * Extract line comments from the given `string`.
+ *
+ * ```js
+ * extract.line(str, options);
+ * ```
+ * @param {String} `string`
+ * @param {Object} `options` Pass `first: true` to return after the first comment is found.
+ * @return {String}
+ * @api public
+ */
+
+function line(str, options, fn) {
+  return factory('//', '\n', Line)(str, options, fn);
+}
+
+/**
+ * Factory for extracting comments from a string.
+ *
+ * @param {String} `string`
+ * @return {String}
+ */
+
+function factory(open, close, Ctor) {
+  return function(str, options, fn) {
+    if (typeof str !== 'string') {
+      throw new TypeError('expected a string');
+    }
+
+    if (typeof options === 'function') {
+      fn = options;
+      options = {};
+    }
+
+    if (typeof fn !== 'function') {
+      fn = utils.identity;
+    }
+
+    var opts = extend({}, options);
+    str = utils.normalize(str);
+    str = utils.escapeQuoted(str);
+
+    var res = [];
+    var start = str.indexOf(open);
+    var end = str.indexOf(close, start);
+    var len = str.length;
+    if (end === -1) {
+      end = len;
+    }
+
+    while (start !== -1 && end <= len) {
+      var comment = fn(new Ctor(str, start, end, open, close));
+      res.push(comment);
+      if (opts.first && res.length === 1) {
+        return res;
+      }
+      start = str.indexOf(open, end + 1);
+      end = str.indexOf(close, start);
+      if (end === -1) {
+        end = len;
+      }
+    }
+    return res;
+  };
+}
+
+/**
+ * Extract the first comment from the given `string`.
+ *
+ * @param {String} `string`
+ * @param {Object} `options` Pass `first: true` to return after the first comment is found.
+ * @return {String}
+ * @api public
+ */
+
+function first(str) {
+  if (typeof str !== 'string') {
+    throw new TypeError('expected a string');
+  }
+
+  var arr = comments(str, {first: true});
+  if (arr && arr.length) {
+    return arr[0].raw;
+  } else {
+    return null;
+  }
+}
+
+/**
+ * Utility for sorting line and block comments into
+ * the correct order.
+ */
+
+function compare(a, b) {
+  return a.loc.start.pos - b.loc.start.pos;
+}
+
+/**
+ * Expose `extract` module
+ */
+
+module.exports = comments;
+
+/**
+ * Expose `extract.first` method
+ */
+
+module.exports.first = first;
+
+/**
+ * Expose `extract.block` method
+ */
+
+module.exports.block = block;
+
+/**
+ * Expose `extract.line` method
+ */
+
+module.exports.line = line;
+
+/**
+ * Expose `extract.factory` method
+ */
+
+module.exports.factory = factory;
+
+},{"./lib/block":12,"./lib/line":14,"./lib/utils":15,"extend-shallow":10}],12:[function(require,module,exports){
+'use strict';
+
+var utils = require('./utils');
+var Code = require('./code');
+
+/**
+ * Create a new BlockComment with:
+ *   - `str` the entire string
+ *   - `idx` the starting index of the comment
+ *   - `end` the ending index of the comment
+ *   - `open` the opening character(s) of the comment
+ *   - `close` the closing character(s) of the comment
+ */
+
+function BlockComment(str, idx, end, open, close) {
+  var ol = open.length;
+  var cl = close.length;
+
+  var lineno = utils.linesCount(str, idx);
+  var value = utils.restore(str.slice(idx, end + cl));
+  var inner = value.slice(ol, -cl);
+  var lines = utils.strip(inner.split('\n'));
+
+  this.type = 'block';
+  this.raw = value;
+  this.value = lines.join('\n');
+  this.lines = lines;
+
+  this.loc = {
+    start: {
+      line: lineno,
+      pos: idx
+    },
+    end: {
+      line: lineno + utils.linesCount(value) - 1,
+      pos: end + cl
+    }
+  };
+
+  /**
+   * Add code context
+   */
+
+  this.code = new Code(str, this);
+}
+
+/**
+ * expose `BlockComment`
+ */
+
+module.exports = BlockComment;
+
+},{"./code":13,"./utils":15}],13:[function(require,module,exports){
+'use strict';
+
+var codeContext = require('parse-code-context');
+var utils = require('./utils');
+
+function Code(str, comment) {
+  str = utils.restore(str);
+  var start = comment.loc.end.pos;
+  var lineno = comment.loc.end.line;
+  var ctx = {};
+
+  var lines = str.split('\n').slice(lineno);
+  for (var i = 0; i < lines.length; i++) {
+    var res = codeContext(lines[i], lineno + i);
+    if (res) {
+      ctx = res;
+      lineno += i;
+      break;
+    }
+  }
+
+  var val = ctx.original || '';
+  var pos = str.slice(start).indexOf(val) + start;
 
   return {
-    valueOf: function(ctx) {
-      var num = fn.call(ctx);
+    context: ctx,
+    line: lineno,
+    loc: {
+      start: { line: lineno, pos: pos },
+      end: { line: lineno, pos: pos + val.length }
+    },
+    value: val.trim()
+  };
+}
 
-      return typeof num === "number" ? num : null;
+/**
+ * Expose `Code`
+ */
+
+module.exports = Code;
+
+},{"./utils":15,"parse-code-context":27}],14:[function(require,module,exports){
+'use strict';
+
+var utils = require('./utils');
+
+/**
+ * Create a new LineComment with:
+ *   - `str` the entire string
+ *   - `idx` the starting index of the comment
+ *   - `end` the ending index of the comment
+ *   - `open` the opening character(s) of the comment (e.g. '//')
+ *   - `close` the closing character(s) of the comment (e.g. '\n')
+ */
+
+function LineComment(str, idx, end, open, close) {
+  var lineno = utils.linesCount(str, idx);
+  var value = utils.restore(str.slice(idx, end));
+
+  this.type = 'line';
+  this.raw = value;
+  this.value = this.raw.replace(/^\s*[\/\s]+/, '');
+
+  this.loc = {
+    start: {
+      line: lineno,
+      pos: idx
+    },
+    end: {
+      line: lineno + utils.linesCount(value) - 1,
+      pos: end
     }
   };
 }
 
-module.exports.compile = compile;
+/**
+ * expose `LineComment`
+ */
 
-},{}],5:[function(require,module,exports){
+module.exports = LineComment;
+
+},{"./utils":15}],15:[function(require,module,exports){
+'use strict';
+
+var cr = require('cr');
+var bom = require('strip-bom-string');
+var quotesRegex = require('quoted-string-regex');
+var nonchar = require('noncharacters');
+
+/**
+ * Expose `utils`
+ */
+
+var utils = module.exports;
+
+/**
+ * Normalize newlines, strip carriage returns and
+ * byte order marks from `str`
+ */
+
+utils.normalize = function(str) {
+  return cr(bom(str));
+};
+
+/**
+ * Return the given value unchanged
+ */
+
+utils.identity = function(val) {
+  return val;
+};
+
+/**
+ * Get the total number of lines from the start
+ * of a string to the given index.
+ */
+
+utils.linesCount = function(str, i) {
+  if (typeof i === 'number') {
+    return str.slice(0, i).split('\n').length;
+  }
+  return str.split('\n').length;
+};
+
+/**
+ * Utility for getting a sequence of non-characters. The
+ * goal is to return a non-character string that is the
+ * same length as the characters we're replacing.
+ *
+ * http://www.unicode.org/faq/private_use.html#noncharacters
+ */
+
+function ch(num) {
+  return nonchar[num] + nonchar[num];
+}
+
+/**
+ * Escaped comment characters in quoted strings
+ *
+ * @param {String} str
+ * @return {String}
+ */
+
+utils.escapeQuoted = function(str) {
+  return str.replace(quotesRegex(), function(val) {
+    val = val.split('//').join(ch(0));
+    val = val.split('/*').join(ch(1));
+    val = val.split('*/').join(ch(2));
+    return val;
+  });
+};
+
+/**
+ * Restore comment characters in quoted strings
+ *
+ * @param {String} str
+ * @return {String}
+ */
+
+utils.restore = function(str) {
+  return str.replace(quotesRegex(), function(val) {
+    val = val.split(ch(0)).join('//');
+    val = val.split(ch(1)).join('/*');
+    val = val.split(ch(2)).join('*/');
+    return val;
+  });
+};
+
+/**
+ * Strip stars from the beginning of each comment line,
+ * and strip whitespace from the end of each line. We
+ * can't strip whitespace from the beginning since comments
+ * use markdown or other whitespace-sensitive formatting.
+ *
+ * @param {Array} `lines`
+ * @return {Array}
+ */
+
+utils.strip = function(lines) {
+  var len = lines.length, i = -1;
+  var res = [];
+
+  while (++i < len) {
+    var line = lines[i].replace(/^\s*[*\/]+\s?|\s+$/g, '');
+    if (!line) continue;
+    res.push(line);
+  }
+  return res;
+};
+
+},{"cr":8,"noncharacters":26,"quoted-string-regex":28,"strip-bom-string":29}],16:[function(require,module,exports){
+/*!
+ * is-extendable <https://github.com/jonschlinkert/is-extendable>
+ *
+ * Copyright (c) 2015, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+'use strict';
+
+module.exports = function isExtendable(val) {
+  return typeof val !== 'undefined' && val !== null
+    && (typeof val === 'object' || typeof val === 'function');
+};
+
+},{}],17:[function(require,module,exports){
+arguments[4][1][0].apply(exports,arguments)
+},{"./lib":23,"dup":1}],18:[function(require,module,exports){
 "use strict";
 
-var KEYWORDS =[
-  // keywords
-  "break","case","catch","continue","debugger","default","delete","do","else",
-  "finally","for","function","if","in","instanceof","new","return","switch",
-  "this","throw","try","typeof","var","void","while","with","undefined",
-  // reserved
-  "abstract","boolean","byte","char","class","const","double","enum","export",
-  "extends","final","float","goto","implements","import","int","interface",
-  "long","native","package","private","protected","public","short","static",
-  "super","synchronized","throws","transient","volatile",
-  // ECMA 5 - use strict
-  "arguments","let","yield"
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = {
+  defaultTempo: 120,
+  minTempo: 30,
+  maxTempo: 240,
+  defaultOctave: 5,
+  minOctave: 0,
+  maxOctave: 8,
+  defaultNoteLength: 4,
+  minNoteLength: 1,
+  maxNoteLength: 64,
+  defaultQuantize: 6,
+  minQuantize: 0,
+  maxQuantize: 8,
+  defaultVolume: 12,
+  minVolume: 0,
+  maxVolume: 16,
+  defaultLoopCount: 2,
+  maxLoopCount: 999,
+  octaveShiftDirection: 1
+};
+module.exports = exports["default"];
+},{}],19:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _Syntax = require("./Syntax");
+
+var _Syntax2 = _interopRequireDefault(_Syntax);
+
+var _DefaultConfig = require("./DefaultConfig");
+
+var _DefaultConfig2 = _interopRequireDefault(_DefaultConfig);
+
+var _MMLParser = require("./MMLParser");
+
+var _MMLParser2 = _interopRequireDefault(_MMLParser);
+
+var _utilsConstrain = require("./utils/constrain");
+
+var _utilsConstrain2 = _interopRequireDefault(_utilsConstrain);
+
+var _utilsXtend = require("./utils/xtend");
+
+var _utilsXtend2 = _interopRequireDefault(_utilsXtend);
+
+var ITERATOR = typeof Symbol !== "undefined" ? Symbol.iterator : "Symbol(Symbol.iterator)";
+
+var MMLIterator = (function () {
+  function MMLIterator(source) {
+    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+    _classCallCheck(this, MMLIterator);
+
+    this.source = source;
+    this.config = (0, _utilsXtend2["default"])(_DefaultConfig2["default"], config);
+
+    this._commands = new _MMLParser2["default"](source).parse();
+    this._commandIndex = 0;
+    this._processedTime = 0;
+    this._octave = this.config.defaultOctave;
+    this._noteLength = [this.config.defaultNoteLength];
+    this._quantize = this.config.defaultQuantize;
+    this._volume = this.config.defaultVolume;
+    this._tempo = this.config.defaultTempo;
+    this._infiniteLoopIndex = -1;
+    this._loopStack = [];
+  }
+
+  _createClass(MMLIterator, [{
+    key: "hasNext",
+    value: function hasNext() {
+      return this._commandIndex < this._commands.length;
+    }
+  }, {
+    key: "forward",
+    value: function forward() {
+      while (this.hasNext() && this._commands[this._commandIndex].type !== _Syntax2["default"].Note) {
+        var command = this._commands[this._commandIndex++];
+
+        this[command.type](command);
+      }
+
+      return this._commands[this._commandIndex++] || {};
+    }
+  }, {
+    key: "next",
+    value: function next() {
+      var command = this.forward();
+
+      if (command.type === _Syntax2["default"].Note) {
+        return { done: false, value: this[command.type](command) };
+      } else {
+        return { done: true, value: null };
+      }
+    }
+  }, {
+    key: ITERATOR,
+    value: function value() {
+      return this;
+    }
+  }, {
+    key: "_calcDuration",
+    value: function _calcDuration(noteLength) {
+      var _this = this;
+
+      if (noteLength[0] === null) {
+        noteLength = this._noteLength.concat(noteLength.slice(1));
+      }
+
+      var prev = null;
+      var dotted = 0;
+
+      noteLength = noteLength.map(function (elem) {
+        switch (elem) {
+          case null:
+            elem = prev;
+            break;
+          case 0:
+            elem = dotted = dotted * 2;
+            break;
+          default:
+            prev = dotted = elem;
+            break;
+        }
+
+        var value = elem !== null ? elem : _this.config.defaultNoteLength;
+        var length = (0, _utilsConstrain2["default"])(value, _this.config.minNoteLength, _this.config.maxNoteLength);
+
+        return 60 / _this._tempo * (4 / length);
+      });
+
+      return noteLength.reduce(function (a, b) {
+        return a + b;
+      }, 0);
+    }
+  }, {
+    key: "_calcNoteNumber",
+    value: function _calcNoteNumber(noteNumber) {
+      return noteNumber + this._octave * 12 + 12;
+    }
+  }, {
+    key: _Syntax2["default"].Note,
+    value: function value(command) {
+      var _this2 = this;
+
+      var time = this._processedTime;
+      var duration = this._calcDuration(command.noteLength);
+      var gateTime = duration * (this._quantize / this.config.maxQuantize);
+      var noteNumbers = command.noteNumbers.map(function (noteNumber) {
+        return _this2._calcNoteNumber(noteNumber);
+      });
+      var volume = this._volume / this.config.maxVolume;
+
+      this._processedTime = this._processedTime + duration;
+
+      return { time: time, duration: duration, gateTime: gateTime, noteNumbers: noteNumbers, volume: volume };
+    }
+  }, {
+    key: _Syntax2["default"].Octave,
+    value: function value(command) {
+      var value = command.value !== null ? command.value : this.config.defaultOctave;
+      var octave = (0, _utilsConstrain2["default"])(value, this.config.minOctave, this.config.maxOctave);
+
+      this._octave = octave;
+    }
+  }, {
+    key: _Syntax2["default"].OctaveShift,
+    value: function value(command) {
+      var value = command.value !== null ? command.value : 1;
+      var direction = command.direction * this.config.octaveShiftDirection;
+      var octave = (0, _utilsConstrain2["default"])(this._octave + value * direction, this.config.minOctave, this.config.maxOctave);
+
+      this._octave = octave;
+    }
+  }, {
+    key: _Syntax2["default"].NoteLength,
+    value: function value(command) {
+      var _this3 = this;
+
+      var noteLength = command.noteLength.map(function (value) {
+        value = value !== null ? value : _this3.config.defaultNoteLength;
+
+        return (0, _utilsConstrain2["default"])(value, _this3.config.minNoteLength, _this3.config.maxNoteLength);
+      });
+
+      this._noteLength = noteLength;
+    }
+  }, {
+    key: _Syntax2["default"].NoteQuantize,
+    value: function value(command) {
+      var value = command.value !== null ? command.value : this.config.defaultQuantize;
+      var quantize = (0, _utilsConstrain2["default"])(value, this.config.minQuantize, this.config.maxQuantize);
+
+      this._quantize = quantize;
+    }
+  }, {
+    key: _Syntax2["default"].NoteVolume,
+    value: function value(command) {
+      var value = command.value !== null ? command.value : this.config.defaultVolume;
+      var volume = (0, _utilsConstrain2["default"])(value, this.config.minVolume, this.config.maxVolume);
+
+      this._volume = volume;
+    }
+  }, {
+    key: _Syntax2["default"].Tempo,
+    value: function value(command) {
+      var value = command.value !== null ? command.value : this.config.defaultTempo;
+      var tempo = (0, _utilsConstrain2["default"])(value, this.config.minTempo, this.config.maxTempo);
+
+      this._tempo = tempo;
+    }
+  }, {
+    key: _Syntax2["default"].InfiniteLoop,
+    value: function value() {
+      this._infiniteLoopIndex = this._commandIndex;
+    }
+  }, {
+    key: _Syntax2["default"].LoopBegin,
+    value: function value(command) {
+      var value = command.value !== null ? command.value : this.config.defaultLoopCount;
+      var loopCount = (0, _utilsConstrain2["default"])(value, 1, this.config.maxLoopCount);
+      var loopTopIndex = this._commandIndex;
+      var loopOutIndex = -1;
+
+      this._loopStack.push({ loopCount: loopCount, loopTopIndex: loopTopIndex, loopOutIndex: loopOutIndex });
+    }
+  }, {
+    key: _Syntax2["default"].LoopExit,
+    value: function value() {
+      var looper = this._loopStack[this._loopStack.length - 1];
+      var index = this._commandIndex;
+
+      if (looper.loopCount <= 1 && looper.loopOutIndex !== -1) {
+        index = looper.loopOutIndex;
+      }
+
+      this._commandIndex = index;
+    }
+  }, {
+    key: _Syntax2["default"].LoopEnd,
+    value: function value() {
+      var looper = this._loopStack[this._loopStack.length - 1];
+      var index = this._commandIndex;
+
+      if (looper.loopOutIndex === -1) {
+        looper.loopOutIndex = this._commandIndex;
+      }
+      looper.loopCount -= 1;
+
+      if (0 < looper.loopCount) {
+        index = looper.loopTopIndex;
+      } else {
+        this._loopStack.pop();
+      }
+
+      this._commandIndex = index;
+    }
+  }]);
+
+  return MMLIterator;
+})();
+
+exports["default"] = MMLIterator;
+module.exports = exports["default"];
+},{"./DefaultConfig":18,"./MMLParser":20,"./Syntax":22,"./utils/constrain":24,"./utils/xtend":25}],20:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _Syntax = require("./Syntax");
+
+var _Syntax2 = _interopRequireDefault(_Syntax);
+
+var _Scanner = require("./Scanner");
+
+var _Scanner2 = _interopRequireDefault(_Scanner);
+
+var NOTE_INDEXES = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
+
+var MMLParser = (function () {
+  function MMLParser(source) {
+    _classCallCheck(this, MMLParser);
+
+    this.scanner = new _Scanner2["default"](source);
+  }
+
+  _createClass(MMLParser, [{
+    key: "parse",
+    value: function parse() {
+      var _this = this;
+
+      var result = [];
+
+      this._readUntil(";", function () {
+        result = result.concat(_this.advance());
+      });
+
+      return result;
+    }
+  }, {
+    key: "advance",
+    value: function advance() {
+      switch (this.scanner.peek()) {
+        case "c":
+        case "d":
+        case "e":
+        case "f":
+        case "g":
+        case "a":
+        case "b":
+          return this.readNote();
+        case "[":
+          return this.readChord();
+        case "r":
+          return this.readRest();
+        case "o":
+          return this.readOctave();
+        case "<":
+          return this.readOctaveShift(+1);
+        case ">":
+          return this.readOctaveShift(-1);
+        case "l":
+          return this.readNoteLength();
+        case "q":
+          return this.readNoteQuantize();
+        case "v":
+          return this.readNoteVolume();
+        case "t":
+          return this.readTempo();
+        case "$":
+          return this.readInfiniteLoop();
+        case "/":
+          return this.readLoop();
+      }
+      this.scanner.throwUnexpectedToken();
+    }
+  }, {
+    key: "readNote",
+    value: function readNote() {
+      return {
+        type: _Syntax2["default"].Note,
+        noteNumbers: [this._readNoteNumber(0)],
+        noteLength: this._readLength()
+      };
+    }
+  }, {
+    key: "readChord",
+    value: function readChord() {
+      var _this2 = this;
+
+      this.scanner.expect("[");
+
+      var noteList = [];
+      var offset = 0;
+
+      this._readUntil("]", function () {
+        switch (_this2.scanner.peek()) {
+          case "c":
+          case "d":
+          case "e":
+          case "f":
+          case "g":
+          case "a":
+          case "b":
+            noteList.push(_this2._readNoteNumber(offset));
+            break;
+          case "<":
+            _this2.scanner.next();
+            offset += 12;
+            break;
+          case ">":
+            _this2.scanner.next();
+            offset -= 12;
+            break;
+          default:
+            _this2.scanner.throwUnexpectedToken();
+        }
+      });
+
+      this.scanner.expect("]");
+
+      return {
+        type: _Syntax2["default"].Note,
+        noteNumbers: noteList,
+        noteLength: this._readLength()
+      };
+    }
+  }, {
+    key: "readRest",
+    value: function readRest() {
+      this.scanner.expect("r");
+
+      return {
+        type: _Syntax2["default"].Note,
+        noteNumbers: [],
+        noteLength: this._readLength()
+      };
+    }
+  }, {
+    key: "readOctave",
+    value: function readOctave() {
+      this.scanner.expect("o");
+
+      return {
+        type: _Syntax2["default"].Octave,
+        value: this._readArgument(/\d+/)
+      };
+    }
+  }, {
+    key: "readOctaveShift",
+    value: function readOctaveShift(direction) {
+      this.scanner.expect(/<|>/);
+
+      return {
+        type: _Syntax2["default"].OctaveShift,
+        direction: direction | 0,
+        value: this._readArgument(/\d+/)
+      };
+    }
+  }, {
+    key: "readNoteLength",
+    value: function readNoteLength() {
+      this.scanner.expect("l");
+
+      return {
+        type: _Syntax2["default"].NoteLength,
+        noteLength: this._readLength()
+      };
+    }
+  }, {
+    key: "readNoteQuantize",
+    value: function readNoteQuantize() {
+      this.scanner.expect("q");
+
+      return {
+        type: _Syntax2["default"].NoteQuantize,
+        value: this._readArgument(/\d+/)
+      };
+    }
+  }, {
+    key: "readNoteVolume",
+    value: function readNoteVolume() {
+      this.scanner.expect("v");
+
+      return {
+        type: _Syntax2["default"].NoteVolume,
+        value: this._readArgument(/\d+/)
+      };
+    }
+  }, {
+    key: "readTempo",
+    value: function readTempo() {
+      this.scanner.expect("t");
+
+      return {
+        type: _Syntax2["default"].Tempo,
+        value: this._readArgument(/\d+(\.\d+)?/)
+      };
+    }
+  }, {
+    key: "readInfiniteLoop",
+    value: function readInfiniteLoop() {
+      this.scanner.expect("$");
+
+      return {
+        type: _Syntax2["default"].InfiniteLoop
+      };
+    }
+  }, {
+    key: "readLoop",
+    value: function readLoop() {
+      var _this3 = this;
+
+      this.scanner.expect("/");
+      this.scanner.expect(":");
+
+      var result = [];
+      var loopBegin = { type: _Syntax2["default"].LoopBegin };
+      var loopEnd = { type: _Syntax2["default"].LoopEnd };
+
+      result = result.concat(loopBegin);
+      this._readUntil(/[|:]/, function () {
+        result = result.concat(_this3.advance());
+      });
+      result = result.concat(this._readLoopExit());
+
+      this.scanner.expect(":");
+      this.scanner.expect("/");
+
+      loopBegin.value = this._readArgument(/\d+/) || null;
+
+      result = result.concat(loopEnd);
+
+      return result;
+    }
+  }, {
+    key: "_readUntil",
+    value: function _readUntil(matcher, callback) {
+      while (this.scanner.hasNext()) {
+        this.scanner.forward();
+        if (!this.scanner.hasNext() || this.scanner.match(matcher)) {
+          break;
+        }
+        callback();
+      }
+    }
+  }, {
+    key: "_readArgument",
+    value: function _readArgument(matcher) {
+      var num = this.scanner.scan(matcher);
+
+      return num !== null ? +num : null;
+    }
+  }, {
+    key: "_readNoteNumber",
+    value: function _readNoteNumber(offset) {
+      var noteIndex = NOTE_INDEXES[this.scanner.next()];
+
+      return noteIndex + this._readAccidental() + offset;
+    }
+  }, {
+    key: "_readAccidental",
+    value: function _readAccidental() {
+      if (this.scanner.match("+")) {
+        return +1 * this.scanner.scan(/\++/).length;
+      }
+      if (this.scanner.match("-")) {
+        return -1 * this.scanner.scan(/\-+/).length;
+      }
+      return 0;
+    }
+  }, {
+    key: "_readDot",
+    value: function _readDot() {
+      var len = (this.scanner.scan(/\.+/) || "").length;
+      var result = new Array(len);
+
+      for (var i = 0; i < len; i++) {
+        result[i] = 0;
+      }
+
+      return result;
+    }
+  }, {
+    key: "_readLength",
+    value: function _readLength() {
+      var result = [];
+
+      result = result.concat(this._readArgument(/\d+/));
+      result = result.concat(this._readDot());
+
+      var tie = this._readTie();
+
+      if (tie) {
+        result = result.concat(tie);
+      }
+
+      return result;
+    }
+  }, {
+    key: "_readTie",
+    value: function _readTie() {
+      this.scanner.forward();
+
+      if (this.scanner.match("^")) {
+        this.scanner.next();
+        return this._readLength();
+      }
+
+      return null;
+    }
+  }, {
+    key: "_readLoopExit",
+    value: function _readLoopExit() {
+      var _this4 = this;
+
+      var result = [];
+
+      if (this.scanner.match("|")) {
+        this.scanner.next();
+
+        var loopExit = { type: _Syntax2["default"].LoopExit };
+
+        result = result.concat(loopExit);
+
+        this._readUntil(":", function () {
+          result = result.concat(_this4.advance());
+        });
+      }
+
+      return result;
+    }
+  }]);
+
+  return MMLParser;
+})();
+
+exports["default"] = MMLParser;
+module.exports = exports["default"];
+},{"./Scanner":21,"./Syntax":22}],21:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Scanner = (function () {
+  function Scanner(source) {
+    _classCallCheck(this, Scanner);
+
+    this.source = source;
+    this.index = 0;
+  }
+
+  _createClass(Scanner, [{
+    key: "hasNext",
+    value: function hasNext() {
+      return this.index < this.source.length;
+    }
+  }, {
+    key: "peek",
+    value: function peek() {
+      return this.source.charAt(this.index) || "";
+    }
+  }, {
+    key: "next",
+    value: function next() {
+      return this.source.charAt(this.index++) || "";
+    }
+  }, {
+    key: "forward",
+    value: function forward() {
+      while (this.hasNext() && this.match(/\s/)) {
+        this.index += 1;
+      }
+    }
+  }, {
+    key: "match",
+    value: function match(matcher) {
+      if (matcher instanceof RegExp) {
+        return matcher.test(this.peek());
+      }
+      return this.peek() === matcher;
+    }
+  }, {
+    key: "expect",
+    value: function expect(matcher) {
+      if (!this.match(matcher)) {
+        this.throwUnexpectedToken();
+      }
+      this.index += 1;
+    }
+  }, {
+    key: "scan",
+    value: function scan(matcher) {
+      var target = this.source.substr(this.index);
+      var result = null;
+
+      if (matcher instanceof RegExp) {
+        var matched = matcher.exec(target);
+
+        if (matched && matched.index === 0) {
+          result = matched[0];
+        }
+      } else if (target.substr(0, matcher.length) === matcher) {
+        result = matcher;
+      }
+
+      if (result) {
+        this.index += result.length;
+      }
+
+      return result;
+    }
+  }, {
+    key: "throwUnexpectedToken",
+    value: function throwUnexpectedToken() {
+      var identifier = this.peek() || "ILLEGAL";
+
+      throw new SyntaxError("Unexpected token: " + identifier);
+    }
+  }]);
+
+  return Scanner;
+})();
+
+exports["default"] = Scanner;
+module.exports = exports["default"];
+},{}],22:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = {
+  Note: "Note",
+  Octave: "Octave",
+  OctaveShift: "OctaveShift",
+  NoteLength: "NoteLength",
+  NoteQuantize: "NoteQuantize",
+  NoteVolume: "NoteVolume",
+  Tempo: "Tempo",
+  InfiniteLoop: "InfiniteLoop",
+  LoopBegin: "LoopBegin",
+  LoopExit: "LoopExit",
+  LoopEnd: "LoopEnd"
+};
+module.exports = exports["default"];
+},{}],23:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _MMLIterator = require("./MMLIterator");
+
+var _MMLIterator2 = _interopRequireDefault(_MMLIterator);
+
+exports["default"] = _MMLIterator2["default"];
+module.exports = exports["default"];
+},{"./MMLIterator":19}],24:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = constrain;
+
+function constrain(value, minValue, maxValue) {
+  return Math.max(minValue, Math.min(value, maxValue));
+}
+
+module.exports = exports["default"];
+},{}],25:[function(require,module,exports){
+arguments[4][7][0].apply(exports,arguments)
+},{"dup":7}],26:[function(require,module,exports){
+/*!
+ * noncharacters <https://github.com/jonschlinkert/noncharacters>
+ *
+ * Copyright (c) 2015, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+'use strict';
+
+module.exports = [
+  '\uFFFF',
+  '\uFFFE',
+
+  '\uFDD1',
+  '\uFDD2',
+  '\uFDD3',
+  '\uFDD4',
+  '\uFDD5',
+  '\uFDD6',
+  '\uFDD7',
+  '\uFDD8',
+  '\uFDD9',
+  '\uFDDA',
+  '\uFDDB',
+  '\uFDDC',
+  '\uFDDD',
+  '\uFDDE',
+  '\uFDDF',
+  '\uFDE0',
+  '\uFDE1',
+  '\uFDE2',
+  '\uFDE3',
+  '\uFDE4',
+  '\uFDE5',
+  '\uFDE6',
+  '\uFDE7',
+  '\uFDE8',
+  '\uFDE9',
+  '\uFDEA',
+  '\uFDEB',
+  '\uFDEC',
+  '\uFDED',
+  '\uFDEE',
+  '\uFDEF'
 ];
 
-var WRAPPING_PAIRS = { "{": "}", "(": ")", "[": "]" };
+},{}],27:[function(require,module,exports){
+/*!
+ * parse-code-context <https://github.com/jonschlinkert/parse-code-context>
+ * Regex originally sourced and modified from <https://github.com/visionmedia/dox>.
+ *
+ * Copyright (c) 2015 Jon Schlinkert.
+ * Licensed under the MIT license.
+ */
 
-function peek(list) {
-  return list[list.length - 1];
+'use strict';
+
+module.exports = function (str, i) {
+  var match = null;
+
+  // function statement
+  if (match = /^function[ \t]([\w$]+)[ \t]*([\w\W]+)?/.exec(str)) {
+    return {
+      begin: i,
+      type: 'function statement',
+      name: match[1],
+      params: (match[2]).split(/\W/g).filter(Boolean),
+      string: match[1] + '()',
+      original: str
+    };
+    // function expression
+  } else if (match = /^var[ \t]*([\w$]+)[ \t]*=[ \t]*function([\w\W]+)?/.exec(str)) {
+    return {
+      begin: i,
+      type: 'function expression',
+      name: match[1],
+      params: (match[2]).split(/\W/g).filter(Boolean),
+      string: match[1] + '()',
+      original: str
+    };
+    // module.exports expression
+  } else if (match = /^(module\.exports)[ \t]*=[ \t]*function[ \t]([\w$]+)[ \t]*([\w\W]+)?/.exec(str)) {
+    return {
+      begin: i,
+      type: 'function expression',
+      receiver: match[1],
+      name: match[2],
+      params: (match[3]).split(/\W/g).filter(Boolean),
+      string: match[1] + '()',
+      original: str
+    };
+    // module.exports method
+  } else if (match = /^(module\.exports)[ \t]*=[ \t]*function([\w\W]+)?/.exec(str)) {
+    return {
+      begin: i,
+      type: 'method',
+      receiver: match[1],
+      name: '',
+      params: (match[2]).split(/\W/g).filter(Boolean),
+      string: match[1] + '.' + match[2] + '()',
+      original: str
+    };
+    // prototype method
+  } else if (match = /^([\w$]+)\.prototype\.([\w$]+)[ \t]*=[ \t]*function([\w\W]+)?/.exec(str)) {
+    return {
+      begin: i,
+      type: 'prototype method',
+      class: match[1],
+      name: match[2],
+      params: (match[3]).split(/\W/g).filter(Boolean),
+      string: match[1] + '.prototype.' + match[2] + '()',
+      original: str
+    };
+    // prototype property
+  } else if (match = /^([\w$]+)\.prototype\.([\w$]+)[ \t]*=[ \t]*([^\n;]+)/.exec(str)) {
+    return {
+      begin: i,
+      type: 'prototype property',
+      class: match[1],
+      name: match[2],
+      value: match[3],
+      string: match[1] + '.prototype.' + match[2],
+      original: str
+    };
+    // method
+  } else if (match = /^([\w$.]+)\.([\w$]+)[ \t]*=[ \t]*function([\w\W]+)?/.exec(str)) {
+    return {
+      begin: i,
+      type: 'method',
+      receiver: match[1],
+      name: match[2],
+      params: (match[3]).split(/\W/g).filter(Boolean),
+      string: match[1] + '.' + match[2] + '()',
+      original: str
+    };
+    // property
+  } else if (match = /^([\w$]+)\.([\w$]+)[ \t]*=[ \t]*([^\n;]+)/.exec(str)) {
+    return {
+      begin: i,
+      type: 'property',
+      receiver: match[1],
+      name: match[2],
+      value: match[3],
+      string: match[1] + '.' + match[2],
+      original: str
+    };
+    // declaration
+  } else if (match = /^var[ \t]+([\w$]+)[ \t]*=[ \t]*([^\n;]+)/.exec(str)) {
+    return {
+      begin: i,
+      type: 'declaration',
+      name: match[1],
+      value: match[2],
+      string: match[1],
+      original: str
+    };
+  }
+  return null;
+};
+
+},{}],28:[function(require,module,exports){
+/*!
+ * quoted-string-regex <https://github.com/jonschlinkert/quoted-string-regex>
+ *
+ * Copyright (c) 2015, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+'use strict';
+
+module.exports = function() {
+  return /'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/g;
+};
+
+},{}],29:[function(require,module,exports){
+/*!
+ * strip-bom-string <https://github.com/jonschlinkert/strip-bom-string>
+ *
+ * Copyright (c) 2015, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+'use strict';
+
+module.exports = function(str) {
+  if (typeof str === 'string' && str.charAt(0) === '\ufeff') {
+    return str.slice(1);
+  }
+  return str;
+};
+
+},{}],30:[function(require,module,exports){
+'use strict';
+
+var extract = require('extract-comments');
+
+/**
+ * Strip comments from the given `string`.
+ *
+ * @param {String} `string`
+ * @param {Object} `options` Pass `safe: true` to keep comments with `!`
+ * @return {String}
+ * @api public
+ */
+
+function strip(str, options) {
+  options = options || {};
+  if (options.line) {
+    return line(str, options);
+  }
+  if (options.block) {
+    return block(str, options);
+  }
+  if (options.first) {
+    return first(str, options);
+  }
+  str = block(str, options);
+  return line(str, options);
 }
 
-function isKeyword(id) {
-  return KEYWORDS.indexOf(id) !== -1;
+/**
+ * Strip block comments from the given `string`.
+ *
+ * @param {String} `string`
+ * @param {Object} `options` Pass `safe: true` to keep comments with `!`
+ * @return {String}
+ * @api public
+ */
+
+function block(str, options) {
+  return stripEach(str, extract.block(str, options), options);
 }
 
-function parse(scanner) {
-  function identifier() {
-  return scanner.scan(/[_$a-zA-Z][_$\w]*/);
+/**
+ * Strip line comments from the given `string`.
+ *
+ * @param {String} `string`
+ * @param {Object} `options` Pass `safe: true` to keep comments with `!`
+ * @return {String}
+ * @api public
+ */
+
+function line(str, options) {
+  return stripEach(str, extract.line(str, options), options);
+}
+
+/**
+ * Strip the first comment from the given `string`.
+ *
+ * @param {String} `string`
+ * @param {Object} `options` Pass `safe: true` to keep comments with `!`
+ * @return {String}
+ * @api public
+ */
+
+function first(str, options) {
+  return stripEach(str, extract.first(str), options);
+}
+
+/**
+ * Private function for stripping comments.
+ *
+ * @param {String} `string`
+ * @param {Object} `options` Pass `safe: true` to keep comments with `!`
+ * @return {String}
+ */
+
+function stripEach(str, comments, options) {
+  comments.forEach(function(comment) {
+    str = discard(str, comment, options);
+  });
+  return str;
+}
+
+/**
+ * Remove a comment from the given string.
+ *
+ * @param {String} `string`
+ * @param {Object} `options` Pass `safe: true` to keep comments with `!`
+ * @return {String}
+ */
+
+function discard(str, comment, opts) {
+  var ch = comment.value.charAt(0);
+  if (opts && opts.safe === true && ch === '!') {
+    return str;
+  }
+  return str.split(comment.raw).join('');
+}
+
+/**
+ * Expose `strip`
+ */
+
+module.exports = strip;
+
+/**
+ * Expose methods
+ */
+
+module.exports.block = block;
+module.exports.first = first;
+module.exports.line = line;
+
+},{"extract-comments":11}],31:[function(require,module,exports){
+arguments[4][1][0].apply(exports,arguments)
+},{"./lib":34,"dup":1}],32:[function(require,module,exports){
+(function (global){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _events = require("events");
+
+var _utilsDefaults = require("./utils/defaults");
+
+var _utilsDefaults2 = _interopRequireDefault(_utilsDefaults);
+
+var _defaultContext = require("./defaultContext");
+
+var _defaultContext2 = _interopRequireDefault(_defaultContext);
+
+var WebAudioScheduler = (function (_EventEmitter) {
+  _inherits(WebAudioScheduler, _EventEmitter);
+
+  function WebAudioScheduler() {
+    var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+    _classCallCheck(this, WebAudioScheduler);
+
+    _get(Object.getPrototypeOf(WebAudioScheduler.prototype), "constructor", this).call(this);
+
+    this.context = (0, _utilsDefaults2["default"])(opts.context, _defaultContext2["default"]);
+    this.interval = (0, _utilsDefaults2["default"])(opts.interval, 0.025);
+    this.aheadTime = (0, _utilsDefaults2["default"])(opts.aheadTime, 0.1);
+    this.timerAPI = (0, _utilsDefaults2["default"])(opts.timerAPI, global);
+    this.playbackTime = this.currentTime;
+
+    this._timerId = 0;
+    this._schedId = 0;
+    this._scheds = [];
   }
 
-  function string() {
-    return scanner.scan(/('|").*?\1/);
-  }
+  _createClass(WebAudioScheduler, [{
+    key: "start",
+    value: function start(callback) {
+      var _this = this;
 
-  function number() {
-    return scanner.scan(/\d+\.?\d*(e[-+]?\d+)?|0x[\da-f]+/i);
-  }
+      if (this._timerId === 0) {
+        this._timerId = this.timerAPI.setInterval(function () {
+          var t0 = _this.context.currentTime;
+          var t1 = t0 + _this.aheadTime;
 
-  function member() {
-    return scanner.next() + identifier();
-  }
+          _this._process(t0, t1);
+        }, this.interval * 1000);
 
-  function expr() {
-    var variables = [];
-    var stack = [];
-
-    function variable() {
-      var id = identifier();
-
-      if (isKeyword(id)) {
-        throw new SyntaxError(
-          "Statements should not be used in directives: " + id
-        );
+        this.emit("start");
       }
 
-      if (peek(stack) === "}") {
-        scanner.scan(/\s*/);
-        scanner.expect(":");
-
-        var next = expr();
-
-        [].push.apply(variables, next.variables);
-
-        return id + ":" + next.expr;
+      if (callback) {
+        this.insert(this.context.currentTime, callback);
       }
 
-      if (!/^([A-Z]\w*|\$|_|true|false|null)$/.test(id)) {
-        variables.push(id);
-        id = "this." + id;
+      return this;
+    }
+  }, {
+    key: "stop",
+    value: function stop(reset) {
+      if (this._timerId !== 0) {
+        this.timerAPI.clearInterval(this._timerId);
+        this._timerId = 0;
+
+        this.emit("stop");
+      }
+
+      if (reset) {
+        this._scheds.splice(0);
+      }
+
+      return this;
+    }
+  }, {
+    key: "insert",
+    value: function insert(time, callback, args) {
+      var id = ++this._schedId;
+      var event = { id: id, time: time, callback: callback, args: args };
+      var scheds = this._scheds;
+
+      if (scheds.length === 0 || scheds[scheds.length - 1].time <= time) {
+        scheds.push(event);
+      } else {
+        for (var i = 0, imax = scheds.length; i < imax; i++) {
+          if (time < scheds[i].time) {
+            scheds.splice(i, 0, event);
+            break;
+          }
+        }
       }
 
       return id;
     }
-
-    function inExpr() {
-      if (!scanner.hasNext()) {
-        return false;
+  }, {
+    key: "nextTick",
+    value: function nextTick(time, callback, args) {
+      if (typeof time === "function") {
+        args = callback;
+        callback = time;
+        time = this.playbackTime;
       }
 
-      var ch = scanner.peek();
-
-      switch (ch) {
-      case "{": case "(": case "[":
-        stack.push(WRAPPING_PAIRS[ch]);
-        break;
-      case "]": case ")": case "}":
-        if (stack.length === 0) {
-          return false;
-        }
-        if (stack.pop() !== ch) {
-          scanner.throwUnexpectedToken();
-        }
-      }
-
-      return true;
+      return this.insert(time + this.aheadTime, callback, args);
     }
+  }, {
+    key: "remove",
+    value: function remove(schedId) {
+      var scheds = this._scheds;
 
-    var code = "";
-
-    while (inExpr()) {
-      var ch = scanner.peek();
-
-      if (ch === "'" || ch === "\"") {
-        code += string();
-      } else if ("0" <= ch && ch <= "9") {
-        code += number();
-      } else if (ch === ".") {
-        code += member();
-      } else if (/[_$a-zA-Z]/.test(ch)) {
-        code += variable();
-      } else {
-        code += scanner.next();
+      if (typeof schedId === "number") {
+        for (var i = 0, imax = scheds.length; i < imax; i++) {
+          if (schedId === scheds[i].id) {
+            scheds.splice(i, 1);
+            break;
+          }
+        }
       }
+
+      return schedId;
     }
+  }, {
+    key: "removeAll",
+    value: function removeAll() {
+      this._scheds.splice(0);
+    }
+  }, {
+    key: "_process",
+    value: function _process(t0, t1) {
+      var scheds = this._scheds;
 
-    return { expr: code, variables: variables };
-  }
+      this.playbackTime = t0;
+      this.emit("process", { playbackTime: this.playbackTime });
 
-  return expr();
-}
+      while (scheds.length && scheds[0].time < t1) {
+        var _event = scheds.shift();
+        var playbackTime = _event.time;
+        var args = _event.args;
 
-module.exports.parse = parse;
+        this.playbackTime = playbackTime;
 
-},{}],6:[function(require,module,exports){
-"use strict";
+        _event.callback({ playbackTime: playbackTime, args: args });
+      }
 
-/**
- * extend
- *
- * @param {function} ctor
- * @param {function} superCtor
- */
-module.exports = function(ctor, superCtor) {
-  ctor.prototype = Object.create(superCtor.prototype, {
-    constructor: { value: ctor, enumerable: false, writable: true, configurable: true }
-  });
-};
+      this.playbackTime = t0;
+      this.emit("processed", { playbackTime: this.playbackTime });
+    }
+  }, {
+    key: "state",
+    get: function get() {
+      return this._timerId !== 0 ? "running" : "suspended";
+    }
+  }, {
+    key: "currentTime",
+    get: function get() {
+      return this.context.currentTime;
+    }
+  }, {
+    key: "events",
+    get: function get() {
+      return this._scheds.slice();
+    }
+  }]);
 
-},{}],7:[function(require,module,exports){
-(function (global){
-"use strict";
+  return WebAudioScheduler;
+})(_events.EventEmitter);
 
-var MMLEmitter = require("./mml-emitter");
-
-MMLEmitter.version = "0.2.8";
-
-/* istanbul ignore next */
-if (typeof global.window !== "undefined") {
-  global.window.MMLEmitter = MMLEmitter;
-}
-
-module.exports = MMLEmitter;
-
+exports["default"] = WebAudioScheduler;
+module.exports = exports["default"];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./mml-emitter":9}],8:[function(require,module,exports){
+},{"./defaultContext":33,"./utils/defaults":35,"events":9}],33:[function(require,module,exports){
 "use strict";
 
-var ExprCompiler = require("./expr-compiler");
-var Syntax = require("./syntax");
-
-function peek(list) {
-  return list[list.length - 1];
-}
-
-function clip(num, min, max) {
-  return Math.max(min, Math.min(num, max));
-}
-
-function sum(a, b) {
-  return a + b;
-}
-
-function valueOf(ctx, value, defaultVal) {
-  if (value !== null) {
-    value = value.valueOf(ctx);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = Object.defineProperties({}, {
+  currentTime: {
+    get: function get() {
+      return Date.now() / 1000;
+    },
+    configurable: true,
+    enumerable: true
   }
-  return value === null ? defaultVal : value;
-}
-
-function calcTotalDuration(ctx, length) {
-  var config = ctx._config;
-  var prev = null;
-  var dotted = 0;
-
-  if (length[0] === null) {
-    length = ctx._lenList.concat(length.slice(1));
-  }
-
-  return length.map(function(elem) {
-    if (elem === null) {
-      elem = prev;
-    } else if (elem === 0) {
-      elem = dotted = dotted * 2;
-    } else {
-      prev = dotted = elem;
-    }
-
-    var length = valueOf(ctx, elem, 4);
-
-    length = clip(length, config.minLength, config.maxLength);
-
-    return (60 / ctx._tempo) * (4 / length);
-  }).reduce(sum, 0);
-}
-
-function precompile(ctx, node) {
-  if (node && typeof node === "object") {
-    if (node.type === Syntax.Expression) {
-      return ExprCompiler.compile(ctx, node);
-    }
-
-    if (Array.isArray(node)) {
-      return node.map(function(node) {
-        return precompile(ctx, node);
-      });
-    }
-
-    Object.keys(node).forEach(function(key) {
-      node[key] = precompile(ctx, node[key]);
-    });
-  }
-
-  return node;
-}
-
-function compile(track, nodes) {
-  return [].concat({ type: Syntax.Begin }, nodes, { type: Syntax.End })
-    .map(function(node, index) {
-      node = precompile(track, node);
-      return compile[node.type](node, index);
-    });
-}
-
-compile[Syntax.Begin] = function() {
-  return function(ctx, currentTime) {
-    ctx._tempo    = ctx._config.defaultTempo;
-    ctx._octave   = ctx._config.defaultOctave;
-    ctx._quantize = ctx._config.defaultQuantize;
-    ctx._volume   = ctx._config.defaultVolume;
-    ctx._length   = ctx._config.defaultLength;
-    ctx._lenList  = [ ctx._length ];
-    ctx._loopStack = [];
-    ctx._infLoopPos  = null;
-    ctx._infLoopWhen = currentTime;
-    ctx._noteIndex = 0;
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.End] = function() {
-  return function(ctx, currentTime) {
-    if (ctx._infLoopPos !== null) {
-      if (ctx._infLoopWhen !== currentTime) {
-        ctx._pos = ctx._infLoopPos;
-      }
-    } else {
-      ctx._recv({
-        type: "end",
-        playbackTime: currentTime,
-
-        /* deprecated*/
-        when: currentTime,
-
-      }, { bubble: true });
-    }
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.Note] = function(node) {
-  return function(ctx, currentTime) {
-    var config = ctx._config;
-    var totalDuration = calcTotalDuration(ctx, node.length);
-    var duration = totalDuration * (ctx._quantize / config.maxQuantize);
-
-    var noteIndex = ctx._noteIndex;
-    var isChord = node.note.length > 1;
-
-    if (node.note.length) {
-      ctx._noteIndex += 1;
-    }
-
-    node.note.forEach(function(note, index) {
-      var midi, frequency;
-
-      midi = note.noteNum + note.acci;
-      midi += ctx._octave * 12;
-      midi += config.A4Index - 57;
-
-      frequency = config.A4Frequency;
-      frequency *= Math.pow(2, (midi - config.A4Index) * 1 / 12);
-
-      function noteOff(fn, offset) {
-        ctx._recv({
-          type: "sched",
-
-          playbackTime: currentTime + duration + (offset || 0),
-
-          callback: fn
-        }, { private: true });
-      }
-
-      ctx._recv({
-        type: "note",
-        index: noteIndex,
-        playbackTime: currentTime,
-        nextPlaybackTime: currentTime + totalDuration,
-
-        /* deprecated */
-        when: currentTime,
-        nextWhen: currentTime + totalDuration,
-
-        midi: midi,
-        frequency: frequency,
-        noteNum: note.noteNum,
-        accidental: note.acci,
-        duration: duration,
-        isChord: isChord,
-        chordIndex: index,
-        tempo: ctx._tempo,
-        volume: ctx._volume,
-        octave: ctx._octave,
-        length: ctx._length,
-        quantize: ctx._quantize,
-        noteOff: noteOff,
-      });
-    });
-
-    return currentTime + totalDuration;
-  };
-};
-
-compile[Syntax.Octave] = function(node) {
-  return function(ctx, currentTime) {
-    var config = ctx._config;
-    var octave = valueOf(ctx, node.value, config.defaultOctave);
-
-    ctx._octave = clip(octave, config.minOctave, config.maxOctave);
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.OctaveShift] = function(node) {
-  return function(ctx, currentTime) {
-    var config = ctx._config;
-    var octave = ctx._octave;
-
-    octave += node.direction * config.octaveShiftDirection * valueOf(ctx, node.value, 1);
-    ctx._octave = clip(octave, config.minOctave, config.maxOctave);
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.Length] = function(node) {
-  return function(ctx, currentTime) {
-    var config = ctx._config;
-
-    ctx._lenList = node.length.map(function(node) {
-      var length = valueOf(ctx, node, config.defaultLength);
-      return clip(length, config.minLength, config.maxLength);
-    }, this);
-    ctx._length  = ctx._lenList[0];
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.Quantize] = function(node) {
-  return function(ctx, currentTime) {
-    var config = ctx._config;
-    var quantize = valueOf(ctx, node.value, config.defaultQuantize);
-
-    ctx._quantize = clip(quantize, config.minQuantize, config.maxQuantize);
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.Tempo] = function(node) {
-  return function(ctx, currentTime) {
-    var config = ctx._config;
-    var tempo = valueOf(ctx, node.value, config.defaultTempo);
-
-    ctx._tempo = clip(tempo, config.minTempo, config.maxTempo);
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.Volume] = function(node) {
-  return function(ctx, currentTime) {
-    var config = ctx._config;
-    var volume = valueOf(ctx, node.value, config.defaultVolume);
-
-    ctx._volume = clip(volume, config.minVolume, config.maxVolume);
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.InfLoop] = function(node, index) {
-  return function(ctx, currentTime) {
-    ctx._infLoopPos  = index;
-    ctx._infLoopWhen = currentTime;
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.LoopBegin] = function(node, index) {
-  return function(ctx, currentTime) {
-    ctx._loopStack.push([
-      clip(valueOf(ctx, node.value, 2), 1, 999), index, null
-    ]);
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.LoopExit] = function() {
-  return function(ctx, currentTime) {
-    var looper = peek(ctx._loopStack);
-
-    if (looper[0] <= 1 && looper[2] !== null) {
-      ctx._pos = looper[2];
-    }
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.LoopEnd] = function(node, index) {
-  return function(ctx, currentTime) {
-    var looper = peek(ctx._loopStack);
-
-    if (looper[2] === null) {
-      looper[2] = index;
-    }
-
-    looper[0] -= 1;
-
-    if (looper[0] > 0) {
-      ctx._pos = looper[1];
-    } else {
-      ctx._loopStack.pop();
-    }
-
-    return currentTime;
-  };
-};
-
-compile[Syntax.Command] = function(node) {
-  return function(ctx, currentTime) {
-    valueOf(ctx, node.value, 0);
-    return currentTime;
-  };
-};
-
-module.exports.compile = compile;
-
-},{"./expr-compiler":4,"./syntax":13}],9:[function(require,module,exports){
+});
+module.exports = exports["default"];
+},{}],34:[function(require,module,exports){
 "use strict";
 
-var BUFFER_SIZE = 512;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-var extend = require("./extend");
-var MMLParser = require("./mml-parser");
-var MMLTrack = require("./mml-track");
-var Config = require("./config");
-var Emitter = require("./emitter");
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-function MMLEmitter(audioContext, mml, config) {
-  Emitter.call(this);
+var _WebAudioScheduler = require("./WebAudioScheduler");
 
-  config = Config.build(config);
+var _WebAudioScheduler2 = _interopRequireDefault(_WebAudioScheduler);
 
-  this.audioContext = audioContext;
-  this.tracks = MMLParser.parse(mml).map(function(nodes) {
-    return new MMLTrack(this, nodes, config);
-  }, this);
-  this._ended = 0;
-  this._node = null;
-  this._currentTime = 0;
-  this._currentTimeIncr = 0;
-}
-extend(MMLEmitter, Emitter);
-
-MMLEmitter.prototype.start = function() {
-  this.stop();
-
-  var currentTime = this.audioContext.currentTime;
-  var currentTimeIncr = BUFFER_SIZE / this.audioContext.sampleRate;
-
-  this.tracks.forEach(function(track) {
-    track._init(currentTime, currentTimeIncr);
-  }, this);
-
-  this._node = this.audioContext.createScriptProcessor(BUFFER_SIZE, 1, 1);
-
-  this._node.onaudioprocess = this._process.bind(this);
-
-  this._node.connect(this.audioContext.destination);
-
-  return this;
-};
-
-MMLEmitter.prototype.stop = function() {
-  if (this._node) {
-    this._node.disconnect();
-  }
-  this._node = null;
-
-  return this;
-};
-
-MMLEmitter.prototype._recv = function(message) {
-  /* istanbul ignore else */
-  if (message && message.type === "end") {
-    this._ended += 1;
-    if (this.tracks.length <= this._ended) {
-      this.emit("end", message);
-    }
-  }
-};
-
-MMLEmitter.prototype._process = function(e) {
-  var currentTime = e.playbackTime || /* istanbul ignore next */ this.audioContext.currentTime;
-
-  this.tracks.forEach(function(track) {
-    track._process(currentTime);
-  });
-};
-
-module.exports = MMLEmitter;
-
-},{"./config":2,"./emitter":3,"./extend":6,"./mml-parser":10,"./mml-track":11}],10:[function(require,module,exports){
+exports["default"] = _WebAudioScheduler2["default"];
+module.exports = exports["default"];
+},{"./WebAudioScheduler":32}],35:[function(require,module,exports){
 "use strict";
 
-var Scanner = require("./scanner");
-var ExprParser = require("./expr-parser");
-var Syntax = require("./syntax");
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = defaults;
 
-function append(list, elem) {
-
-  if (Array.isArray(elem)) {
-    Array.prototype.push.apply(list, elem);
-  } else if (elem) {
-    list.push(elem);
-  }
-
-  return list;
+function defaults(value, defaultValue) {
+  return value !== undefined ? value : defaultValue;
 }
 
-function parse(scanner) {
-
-  function until(matcher, fn) {
-    while (true) {
-      scanner.forward();
-      if (!scanner.hasNext() || scanner.match(matcher)) {
-        break;
-      }
-      fn();
-    }
-  }
-
-  function noteInfo(offset) {
-    return { noteNum: noteNum(offset), acci: acci() };
-  }
-
-  function noteNum(offset) {
-    return {
-      c:0, d:2, e:4, f:5, g:7, a:9, b:11
-    }[scanner.next()] + offset;
-  }
-
-  function acci() {
-    if (scanner.match("+")) {
-      return +1 * scanner.scan(/\++/).length;
-    }
-
-    if (scanner.match("-")) {
-      return -1 * scanner.scan(/\-+/).length;
-    }
-
-    return 0;
-  }
-
-  function dot() {
-    var len = (scanner.scan(/\.+/) || "").length;
-    var result = new Array(len);
-
-    for (var i = 0; i < len; i++) {
-      result[i] = 0;
-    }
-
-    return result;
-  }
-
-  function length() {
-    return append([ arg(/\d+/) ].concat(dot()), tie());
-  }
-
-  function arg(matcher) {
-    if (scanner.match("(")) {
-      return expr();
-    }
-
-    var num = scanner.scan(matcher);
-
-    return num !== null ? +num : null;
-  }
-
-  function tie() {
-    scanner.forward();
-
-    if (scanner.match("^")) {
-      scanner.next();
-      return length(null);
-    }
-
-    return null;
-  }
-
-  function note() {
-    return { type: Syntax.Note, note: [ noteInfo(0) ], length: length() };
-  }
-
-  function chord() {
-    scanner.expect("[");
-
-    var noteList = [];
-    var offset = 0;
-
-    until("]", function() {
-      switch (scanner.peek()) {
-      case "c": case "d": case "e": case "f": case "g": case "a": case "b":
-        noteList.push(noteInfo(offset));
-        break;
-      case "<":
-        scanner.next();
-        offset += 12;
-        break;
-      case ">":
-        scanner.next();
-        offset -= 12;
-        break;
-      default:
-        scanner.throwUnexpectedToken();
-      }
-    });
-
-    scanner.expect("]");
-
-    return { type: Syntax.Note, note: noteList, length: length() };
-  }
-
-  function r() {
-    scanner.expect("r");
-
-    return { type: Syntax.Note, note: [], length: length() };
-  }
-
-  function o() {
-    scanner.expect("o");
-
-    return { type: Syntax.Octave, value: arg(/\d+/) };
-  }
-
-  function oShift(direction) {
-    scanner.expect(/<|>/);
-
-    return { type: Syntax.OctaveShift, direction: direction|0, value: arg(/\d+/) };
-  }
-
-  function l() {
-    scanner.expect("l");
-
-    return { type: Syntax.Length, length: length() };
-  }
-
-  function q() {
-    scanner.expect("q");
-
-    return { type: Syntax.Quantize, value: arg(/\d+/) };
-  }
-
-  function t() {
-    scanner.expect("t");
-
-    return { type: Syntax.Tempo, value: arg(/\d+(\.\d+)?/) };
-  }
-
-  function v() {
-    scanner.expect("v");
-
-    return { type: Syntax.Volume, value: arg(/\d+/) };
-  }
-
-  function infLoop() {
-    scanner.expect("$");
-
-    return { type: Syntax.InfLoop };
-  }
-
-  function loop() {
-    scanner.expect("/");
-    scanner.expect(":");
-
-    var seq = [ { type: Syntax.LoopBegin } ];
-
-    until(/[|:]/, function() {
-      append(seq, advance());
-    });
-    append(seq, loopExit());
-
-    scanner.expect(":");
-    scanner.expect("/");
-
-    seq.push({ type: Syntax.LoopEnd });
-
-    seq[0].value = arg(/\d+/) || 2;
-
-    return seq;
-  }
-
-  function loopExit() {
-    var seq = [];
-
-    if (scanner.match("|")) {
-      scanner.next();
-
-      seq.push({ type: Syntax.LoopExit });
-
-      until(":", function() {
-        append(seq, advance());
-      });
-    }
-
-    return seq;
-  }
-
-  function command() {
-    scanner.expect("@");
-
-    return { type: Syntax.Command, value: arg(/\d+/) };
-  }
-
-  function expr() {
-    var node;
-
-    scanner.expect("(");
-
-    node = ExprParser.parse(scanner);
-
-    scanner.expect(")");
-
-    node.variables.forEach(function(id) {
-      if (id.charAt(0) === "_") {
-        throw new SyntaxError(
-          "A variable in directives should not be started with '_': " + id
-        );
-      }
-    });
-
-    return { type: Syntax.Expression, expr: node.expr, variables: node.variables };
-  }
-
-  function advance() {
-    switch (scanner.peek()) {
-    case "c": case "d": case "e": case "f": case "g": case "a": case "b":
-      return note();
-    case "[":
-      return chord();
-    case "r":
-      return r();
-    case "o":
-      return o();
-    case "<":
-      return oShift(+1);
-    case ">":
-      return oShift(-1);
-    case "l":
-      return l();
-    case "q":
-      return q();
-    case "t":
-      return t();
-    case "v":
-      return v();
-    case "$":
-      return infLoop();
-    case "/":
-      return loop();
-    case "@":
-      return command();
-    }
-    scanner.throwUnexpectedToken();
-  }
-
-  function mml() {
-    var seq = [];
-
-    until("", function() {
-      var track = [];
-
-      until(";", function() {
-        append(track, advance());
-      });
-
-      seq.push(track);
-
-      if (scanner.match(";")) {
-        scanner.next();
-      }
-    });
-
-    return seq;
-  }
-
-  return mml();
-}
-
-module.exports.parse = function(mml) {
-  return parse(new Scanner(mml));
-};
-
-},{"./expr-parser":5,"./scanner":12,"./syntax":13}],11:[function(require,module,exports){
-"use strict";
-
-var WHEN = 0;
-var FUNC = 1;
-
-var extend  = require("./extend");
-var Emitter = require("./emitter");
-var MMLCompiler = require("./mml-compiler");
-
-function schedSorter(a, b) {
-  return a[WHEN] - b[WHEN];
-}
-
-function MMLTrack(parent, nodes, config) {
-  Emitter.call(this);
-
-  this._pos = 0;
-  this._parent = parent;
-  this._shared = parent;
-  this._config = config;
-  this._nodes = MMLCompiler.compile(this, nodes);
-  this._sched = [];
-  this._currentTimeIncr = 0;
-}
-extend(MMLTrack, Emitter);
-
-MMLTrack.prototype._init = function(currentTime, currentTimeIncr) {
-  this._currentTimeIncr = currentTimeIncr;
-
-  var next = function(currentTime) {
-    var nextCurrentTime = currentTime + this._currentTimeIncr + 0.015;
-    var nodes = this._nodes;
-
-    while (this._pos < nodes.length && currentTime < nextCurrentTime) {
-      currentTime = nodes[this._pos](this, currentTime);
-      this._pos += 1;
-    }
-
-    if (this._pos < nodes.length) {
-      this.sched(currentTime, next);
-    }
-
-  }.bind(this);
-
-  next(currentTime);
-};
-
-MMLTrack.prototype._process = function(currentTime) {
-  var nextCurrentTime = currentTime + this._currentTimeIncr + 0.015;
-
-  var sched = this._sched;
-
-  while (sched.length && sched[0][WHEN] < nextCurrentTime) {
-    var elem = sched.shift();
-
-    elem[FUNC](elem[WHEN]);
-  }
-};
-
-MMLTrack.prototype._recv = function(message, opts) {
-  opts = opts || {};
-
-  if (message.type === "sched") {
-    this.sched(message.playbackTime, message.callback);
-  }
-  if (!opts.private) {
-    this.emit(message.type, message);
-  }
-  if (opts.bubble && this._parent) {
-    this._parent._recv(message);
-  }
-};
-
-MMLTrack.prototype.sched = function(playbackTime, fn) {
-  this._sched.push([ playbackTime, fn ]);
-  this._sched.sort(schedSorter);
-
-  return this;
-};
-
-module.exports = MMLTrack;
-
-},{"./emitter":3,"./extend":6,"./mml-compiler":8}],12:[function(require,module,exports){
-"use strict";
-
-function Scanner(str) {
-  str = String(str);
-
-  var len = str.length;
-  var pos = 0;
-  var lineNumber = len ? 1 : 0;
-  var lineStart  = 0;
-
-  function hasNext() {
-    return pos < len;
-  }
-
-  function peek() {
-    return str.charAt(pos);
-  }
-
-  function next() {
-    return str.charAt(pos++);
-  }
-
-  function match(matcher) {
-    return matcher.test ?
-      matcher.test(str.charAt(pos)) :
-      str.charAt(pos) === matcher;
-  }
-
-  function expect(matcher) {
-    if (!match(matcher)) {
-      throwUnexpectedToken();
-    }
-    pos += 1;
-  }
-
-  function scan(matcher) {
-    var matched = matcher.exec(str.substr(pos));
-
-    if (matched && matched.index === 0) {
-      matched = matched[0];
-      pos += matched.length;
-    } else {
-      matched = null;
-    }
-
-    return matched;
-  }
-
-  function skipComment() {
-    while (hasNext()) {
-      var ch1 = str.charCodeAt(pos);
-      var ch2 = str.charCodeAt(pos + 1);
-
-      if (ch1 === 0x20 || ch1 === 0x09) { // <SPACE> or <TAB>
-        pos += 1;
-      } else if (ch1 === 0x0a) { // <CR>
-        pos += 1;
-        lineNumber += 1;
-        lineStart = pos;
-      } else if (ch1 === 0x2f && ch2 === 0x2f) {
-        skipSingleLineComment();
-      } else if (ch1 === 0x2f && ch2 === 0x2a) {
-        skipMultiLineComment();
-      } else {
-        break;
-      }
-    }
-  }
-
-  function skipSingleLineComment() {
-    pos += 2; // skip //
-
-    while (hasNext()) {
-      if (str.charCodeAt(pos++) === 0x0a) { // <CR>
-        lineNumber += 1;
-        lineStart = pos;
-        break;
-      }
-    }
-  }
-
-  function skipMultiLineComment() {
-    var depth = 1;
-
-    pos += 2; // skip /*
-
-    while (hasNext()) {
-      var ch1 = str.charCodeAt(pos++);
-      var ch2 = str.charCodeAt(pos);
-
-      if (ch1 === 0x0a) { // <CR>
-        lineNumber += 1;
-        lineStart = pos;
-      } else if (ch1 === 0x2f && ch2 === 0x2a) { // /*
-        pos += 1;
-        ++depth;
-      } else if (ch1 === 0x2a && ch2 === 0x2f) { // */
-        pos += 1;
-        if (--depth === 0) {
-          pos += 1;
-          return;
-        }
-      }
-    }
-
-    throwUnexpectedToken();
-  }
-
-  function throwUnexpectedToken() {
-    var ch = peek();
-    var msg = "Unexpected token" + (ch ? (": '" + ch + "'") : " ILLEGAL");
-    var err = new SyntaxError(msg);
-
-    err.index = pos;
-    err.lineNumber = lineNumber;
-    err.column = pos - lineStart + (ch ? 1 : 0);
-
-    throw err;
-  }
-
-  return {
-    hasNext: hasNext,
-    peek: peek,
-    next: next,
-    match: match,
-    expect: expect,
-    scan: scan,
-    forward: skipComment,
-    throwUnexpectedToken: throwUnexpectedToken
-  };
-}
-
-module.exports = Scanner;
-
-},{}],13:[function(require,module,exports){
-"use strict";
-
-module.exports = {
-  Expression: -1,
-  Begin: 0,
-  Note: 1,
-  Octave: 2,
-  OctaveShift: 3,
-  Length: 4,
-  Quantize: 5,
-  Tempo: 6,
-  Volume: 7,
-  InfLoop: 8,
-  LoopBegin: 9,
-  LoopExit: 10,
-  LoopEnd: 11,
-  Command: 12,
-  End: 99,
-};
-
-},{}]},{},[1]);
+module.exports = exports["default"];
+},{}]},{},[1])(1)
+});
