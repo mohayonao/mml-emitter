@@ -13,8 +13,8 @@ $ npm install mml-iterator
 
 downloads:
 
-- [mml-emitter.js](./build/mml-emitter.js)
-- [mml-emitter.min.js](./build/mml-emitter.min.js)
+- [mml-emitter.js](https://raw.githubusercontent.com/mohayonao/mml-emitter/master/build/mml-emitter.js)
+- [mml-emitter.min.js](https://raw.githubusercontent.com/mohayonao/mml-emitter/master/build/mml-emitter.min.js)
 
 ## API
 ### MMLEmitter
