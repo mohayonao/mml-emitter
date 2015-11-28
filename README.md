@@ -8,7 +8,7 @@
 ## Installation
 
 ```
-$ npm install mml-iterator
+$ npm install mml-emitter
 ```
 
 downloads:
@@ -22,8 +22,6 @@ downloads:
 
 #### Instance attributes
 - `tracks: EventEmitter[]`
-- `scheduler: WebAudioScheduler`
-  - instance of [WebAudioScheduler](https://github.com/mohayonao/web-audio-scheduler)
 
 #### Instance methods
 _Also implements methods from the interface [EventEmitter](https://nodejs.org/api/events.html)._
@@ -64,9 +62,9 @@ mmlEmitter.on("end", (e) => {
 mmlEmitter.start();
 ```
 
-## See Also
-- [MML Syntax & Configuration](https://github.com/mohayonao/mml-iterator)
-- [ADSREnvelope](https://github.com/mohayonao/adsr-envelope)
+## Configuration
+- [MMLIterator](https://github.com/mohayonao/mml-iterator) - mml syntax & parser configuration
+- [WebAudioScheduler](https://github.com/mohayonao/web-audio-scheduler) - scheduling configuration
 
 ## License
 

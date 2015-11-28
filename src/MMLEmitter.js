@@ -1,8 +1,8 @@
 import { EventEmitter } from "events";
 import MMLIterator from "mml-iterator";
+import IteratorSequencer from "iterator-sequencer";
 import WebAudioScheduler from "web-audio-scheduler";
 import DefaultConfig from "./DefaultConfig";
-import MMLSequencer from "./MMLSequencer";
 import stripComments from "strip-comments";
 import xtend from "./utils/xtend";
 import toFrequency from "./utils/toFrequency";
@@ -21,7 +21,7 @@ export default class MMLEmitter extends EventEmitter {
     this._startTime = 0;
     this._sequencers = trackSources.map((source) => {
       let iter = new MMLIterator(source, this.config);
-      let sequencer = new MMLSequencer(iter, this.config.interval);
+      let sequencer = new IteratorSequencer(iter, this.config.interval);
 
       sequencer.done = false;
 

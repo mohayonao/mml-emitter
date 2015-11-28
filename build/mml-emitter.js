@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.MMLEmitter = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 module.exports = require("./lib");
 
-},{"./lib":5}],2:[function(require,module,exports){
+},{"./lib":4}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -36,6 +36,10 @@ var _mmlIterator = require("mml-iterator");
 
 var _mmlIterator2 = _interopRequireDefault(_mmlIterator);
 
+var _iteratorSequencer = require("iterator-sequencer");
+
+var _iteratorSequencer2 = _interopRequireDefault(_iteratorSequencer);
+
 var _webAudioScheduler = require("web-audio-scheduler");
 
 var _webAudioScheduler2 = _interopRequireDefault(_webAudioScheduler);
@@ -43,10 +47,6 @@ var _webAudioScheduler2 = _interopRequireDefault(_webAudioScheduler);
 var _DefaultConfig = require("./DefaultConfig");
 
 var _DefaultConfig2 = _interopRequireDefault(_DefaultConfig);
-
-var _MMLSequencer = require("./MMLSequencer");
-
-var _MMLSequencer2 = _interopRequireDefault(_MMLSequencer);
 
 var _stripComments = require("strip-comments");
 
@@ -86,7 +86,7 @@ var MMLEmitter = (function (_EventEmitter) {
     this._startTime = 0;
     this._sequencers = trackSources.map(function (source) {
       var iter = new _mmlIterator2["default"](source, _this.config);
-      var sequencer = new _MMLSequencer2["default"](iter, _this.config.interval);
+      var sequencer = new _iteratorSequencer2["default"](iter, _this.config.interval);
 
       sequencer.done = false;
 
@@ -183,89 +183,7 @@ var MMLEmitter = (function (_EventEmitter) {
 
 exports["default"] = MMLEmitter;
 module.exports = exports["default"];
-},{"./DefaultConfig":2,"./MMLSequencer":4,"./utils/toFrequency":6,"./utils/xtend":7,"events":9,"mml-iterator":17,"strip-comments":30,"web-audio-scheduler":31}],4:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var MMLSequencer = (function () {
-  function MMLSequencer(iter, interval) {
-    _classCallCheck(this, MMLSequencer);
-
-    this.iter = iter;
-    this.interval = interval;
-    this._playbackTime = 0;
-    this._noteEvent = null;
-    this._doneTime = 0;
-    this._done = false;
-  }
-
-  _createClass(MMLSequencer, [{
-    key: "next",
-    value: function next() {
-      var t0 = this._playbackTime + this.interval;
-
-      if (this._done && this._doneTime < t0) {
-        return { done: true, value: [] };
-      }
-
-      var result = [];
-      var noteEvent = undefined;
-
-      while ((noteEvent = this._next(t0)) !== null) {
-        result.push(noteEvent);
-      }
-
-      this._playbackTime = t0;
-
-      return { done: false, value: result };
-    }
-  }, {
-    key: "_next",
-    value: function _next(t0) {
-      if (this._noteEvent) {
-        return this._nextNoteEvent(t0);
-      }
-
-      var items = this.iter.next();
-
-      if (items.done) {
-        this._done = true;
-        return null;
-      }
-
-      this._noteEvent = items.value;
-      this._doneTime = this._noteEvent.time + this._noteEvent.duration;
-
-      return this._next(t0);
-    }
-  }, {
-    key: "_nextNoteEvent",
-    value: function _nextNoteEvent(t0) {
-      if (t0 <= this._noteEvent.time) {
-        return null;
-      }
-
-      var noteEvent = this._noteEvent;
-
-      this._noteEvent = null;
-
-      return noteEvent;
-    }
-  }]);
-
-  return MMLSequencer;
-})();
-
-exports["default"] = MMLSequencer;
-module.exports = exports["default"];
-},{}],5:[function(require,module,exports){
+},{"./DefaultConfig":2,"./utils/toFrequency":5,"./utils/xtend":6,"events":8,"iterator-sequencer":16,"mml-iterator":19,"strip-comments":32,"web-audio-scheduler":33}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -280,7 +198,7 @@ var _MMLEmitter2 = _interopRequireDefault(_MMLEmitter);
 
 exports["default"] = _MMLEmitter2["default"];
 module.exports = exports["default"];
-},{"./MMLEmitter":3}],6:[function(require,module,exports){
+},{"./MMLEmitter":3}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -293,7 +211,7 @@ function toFrequency(noteNumber, a4Index, a4Frequency) {
 }
 
 module.exports = exports["default"];
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -320,7 +238,7 @@ function xtend() {
 }
 
 module.exports = exports["default"];
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*!
  * cr <https://github.com/jonschlinkert/cr>
  *
@@ -344,7 +262,7 @@ module.exports.strip = function(str) {
   return str.split('\r').join('');
 };
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -644,7 +562,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],10:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 var isObject = require('is-extendable');
@@ -679,7 +597,7 @@ function hasOwn(obj, key) {
   return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
-},{"is-extendable":16}],11:[function(require,module,exports){
+},{"is-extendable":15}],10:[function(require,module,exports){
 'use strict';
 
 var extend = require('extend-shallow');
@@ -851,7 +769,7 @@ module.exports.line = line;
 
 module.exports.factory = factory;
 
-},{"./lib/block":12,"./lib/line":14,"./lib/utils":15,"extend-shallow":10}],12:[function(require,module,exports){
+},{"./lib/block":11,"./lib/line":13,"./lib/utils":14,"extend-shallow":9}],11:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -904,7 +822,7 @@ function BlockComment(str, idx, end, open, close) {
 
 module.exports = BlockComment;
 
-},{"./code":13,"./utils":15}],13:[function(require,module,exports){
+},{"./code":12,"./utils":14}],12:[function(require,module,exports){
 'use strict';
 
 var codeContext = require('parse-code-context');
@@ -946,7 +864,7 @@ function Code(str, comment) {
 
 module.exports = Code;
 
-},{"./utils":15,"parse-code-context":27}],14:[function(require,module,exports){
+},{"./utils":14,"parse-code-context":29}],13:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -986,7 +904,7 @@ function LineComment(str, idx, end, open, close) {
 
 module.exports = LineComment;
 
-},{"./utils":15}],15:[function(require,module,exports){
+},{"./utils":14}],14:[function(require,module,exports){
 'use strict';
 
 var cr = require('cr');
@@ -1095,7 +1013,7 @@ utils.strip = function(lines) {
   return res;
 };
 
-},{"cr":8,"noncharacters":26,"quoted-string-regex":28,"strip-bom-string":29}],16:[function(require,module,exports){
+},{"cr":7,"noncharacters":28,"quoted-string-regex":30,"strip-bom-string":31}],15:[function(require,module,exports){
 /*!
  * is-extendable <https://github.com/jonschlinkert/is-extendable>
  *
@@ -1110,9 +1028,115 @@ module.exports = function isExtendable(val) {
     && (typeof val === 'object' || typeof val === 'function');
 };
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
-},{"./lib":23,"dup":1}],18:[function(require,module,exports){
+},{"./lib":18,"dup":1}],17:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ITERATOR = typeof Symbol !== "undefined" ? Symbol.iterator : "Symbol(Symbol.iterator)";
+
+var IteratorSequencer = (function () {
+  function IteratorSequencer(iter, interval) {
+    _classCallCheck(this, IteratorSequencer);
+
+    this.iter = iter;
+    this.interval = +interval;
+    this._currentTime = 0;
+    this._iterItem = null;
+    this._doneTime = 0;
+    this._done = false;
+  }
+
+  _createClass(IteratorSequencer, [{
+    key: "next",
+    value: function next() {
+      var t0 = this._currentTime + this.interval;
+
+      if (this._done && this._doneTime < t0) {
+        return { done: true, value: [] };
+      }
+
+      var result = [];
+      var iterItem = undefined;
+
+      while ((iterItem = this._next(t0)) !== null) {
+        result.push(iterItem);
+      }
+
+      this._currentTime = t0;
+
+      return { done: false, value: result };
+    }
+  }, {
+    key: ITERATOR,
+    value: function value() {
+      return this;
+    }
+  }, {
+    key: "_next",
+    value: function _next(t0) {
+      if (this._iterItem) {
+        return this._nextIterItem(t0);
+      }
+
+      var iterItem = this.iter.next();
+
+      if (iterItem.done) {
+        this._done = true;
+        return null;
+      }
+
+      this._iterItem = iterItem.value;
+      this._doneTime = this._iterItem.time + (this._iterItem.duration || 0);
+
+      return this._nextIterItem(t0);
+    }
+  }, {
+    key: "_nextIterItem",
+    value: function _nextIterItem(t0) {
+      if (t0 <= this._iterItem.time) {
+        return null;
+      }
+
+      var iterItem = this._iterItem;
+
+      this._iterItem = null;
+
+      return iterItem;
+    }
+  }]);
+
+  return IteratorSequencer;
+})();
+
+exports["default"] = IteratorSequencer;
+module.exports = exports["default"];
+},{}],18:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _IteratorSequencer = require("./IteratorSequencer");
+
+var _IteratorSequencer2 = _interopRequireDefault(_IteratorSequencer);
+
+exports["default"] = _IteratorSequencer2["default"];
+module.exports = exports["default"];
+},{"./IteratorSequencer":17}],19:[function(require,module,exports){
+arguments[4][1][0].apply(exports,arguments)
+},{"./lib":25,"dup":1}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1139,7 +1163,7 @@ exports["default"] = {
   octaveShiftDirection: 1
 };
 module.exports = exports["default"];
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1391,7 +1415,7 @@ var MMLIterator = (function () {
 
 exports["default"] = MMLIterator;
 module.exports = exports["default"];
-},{"./DefaultConfig":18,"./MMLParser":20,"./Syntax":22,"./utils/constrain":24,"./utils/xtend":25}],20:[function(require,module,exports){
+},{"./DefaultConfig":20,"./MMLParser":22,"./Syntax":24,"./utils/constrain":26,"./utils/xtend":27}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1734,7 +1758,7 @@ var MMLParser = (function () {
 
 exports["default"] = MMLParser;
 module.exports = exports["default"];
-},{"./Scanner":21,"./Syntax":22}],21:[function(require,module,exports){
+},{"./Scanner":23,"./Syntax":24}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1827,7 +1851,7 @@ var Scanner = (function () {
 
 exports["default"] = Scanner;
 module.exports = exports["default"];
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1847,7 +1871,7 @@ exports["default"] = {
   LoopEnd: "LoopEnd"
 };
 module.exports = exports["default"];
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1862,7 +1886,7 @@ var _MMLIterator2 = _interopRequireDefault(_MMLIterator);
 
 exports["default"] = _MMLIterator2["default"];
 module.exports = exports["default"];
-},{"./MMLIterator":19}],24:[function(require,module,exports){
+},{"./MMLIterator":21}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1875,9 +1899,9 @@ function constrain(value, minValue, maxValue) {
 }
 
 module.exports = exports["default"];
-},{}],25:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"dup":7}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
+arguments[4][6][0].apply(exports,arguments)
+},{"dup":6}],28:[function(require,module,exports){
 /*!
  * noncharacters <https://github.com/jonschlinkert/noncharacters>
  *
@@ -1924,7 +1948,7 @@ module.exports = [
   '\uFDEF'
 ];
 
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 /*!
  * parse-code-context <https://github.com/jonschlinkert/parse-code-context>
  * Regex originally sourced and modified from <https://github.com/visionmedia/dox>.
@@ -2038,7 +2062,7 @@ module.exports = function (str, i) {
   return null;
 };
 
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 /*!
  * quoted-string-regex <https://github.com/jonschlinkert/quoted-string-regex>
  *
@@ -2052,7 +2076,7 @@ module.exports = function() {
   return /'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/g;
 };
 
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 /*!
  * strip-bom-string <https://github.com/jonschlinkert/strip-bom-string>
  *
@@ -2069,7 +2093,7 @@ module.exports = function(str) {
   return str;
 };
 
-},{}],30:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 'use strict';
 
 var extract = require('extract-comments');
@@ -2182,9 +2206,9 @@ module.exports.block = block;
 module.exports.first = first;
 module.exports.line = line;
 
-},{"extract-comments":11}],31:[function(require,module,exports){
+},{"extract-comments":10}],33:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
-},{"./lib":34,"dup":1}],32:[function(require,module,exports){
+},{"./lib":36,"dup":1}],34:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -2367,7 +2391,7 @@ var WebAudioScheduler = (function (_EventEmitter) {
 exports["default"] = WebAudioScheduler;
 module.exports = exports["default"];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./defaultContext":33,"./utils/defaults":35,"events":9}],33:[function(require,module,exports){
+},{"./defaultContext":35,"./utils/defaults":37,"events":8}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2383,7 +2407,7 @@ exports["default"] = Object.defineProperties({}, {
   }
 });
 module.exports = exports["default"];
-},{}],34:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2398,7 +2422,7 @@ var _WebAudioScheduler2 = _interopRequireDefault(_WebAudioScheduler);
 
 exports["default"] = _WebAudioScheduler2["default"];
 module.exports = exports["default"];
-},{"./WebAudioScheduler":32}],35:[function(require,module,exports){
+},{"./WebAudioScheduler":34}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
