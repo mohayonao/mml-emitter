@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "iterator-sequencer": "^0.1.0",
-    "mml-iterator": "^0.2.0",
+    "mml-iterator": "^0.3.0",
     "strip-comments": "^0.4.1",
     "web-audio-scheduler": "^1.0.0"
   },

@@ -1,11 +1,8 @@
 import { EventEmitter } from "events";
-import MMLIterator from "mml-iterator";
 import IteratorSequencer from "iterator-sequencer";
-import WebAudioScheduler from "web-audio-scheduler";
-import DefaultConfig from "./DefaultConfig";
+import MMLIterator from "mml-iterator";
 import stripComments from "strip-comments";
-import xtend from "./utils/xtend";
-import toFrequency from "./utils/toFrequency";
+import WebAudioScheduler from "web-audio-scheduler";
 
 export default class MMLEmitter extends EventEmitter {
   constructor(source, config = {}) {
@@ -14,14 +11,11 @@ export default class MMLEmitter extends EventEmitter {
     let scheduler = config.scheduler || new WebAudioScheduler(config);
     let trackSources = stripComments(source).split(";").filter(source => !!source.trim());
 
-    this.config = xtend(DefaultConfig, config);
-    this.tracks = trackSources.map(() => new EventEmitter());
-    this.scheduler = scheduler;
-
+    this._scheduler = scheduler;
     this._startTime = 0;
     this._sequencers = trackSources.map((source) => {
-      let iter = new MMLIterator(source, this.config);
-      let sequencer = new IteratorSequencer(iter, this.config.interval);
+      let iter = new MMLIterator(source);
+      let sequencer = new IteratorSequencer(iter, this._scheduler.interval);
 
       sequencer.done = false;
 
@@ -31,8 +25,8 @@ export default class MMLEmitter extends EventEmitter {
   }
 
   start() {
-    this._startTime = this.scheduler.currentTime;
-    this.scheduler.start(({ playbackTime }) => {
+    this._startTime = this._scheduler.currentTime;
+    this._scheduler.start(({ playbackTime }) => {
       this._progress(playbackTime);
     });
 
@@ -40,7 +34,7 @@ export default class MMLEmitter extends EventEmitter {
   }
 
   stop() {
-    this.scheduler.stop(true);
+    this._scheduler.stop(true);
 
     return this;
   }
@@ -60,7 +54,6 @@ export default class MMLEmitter extends EventEmitter {
       this._emitNoteEvent(items.value, trackNumber);
 
       if (items.done) {
-        this.tracks[trackNumber].emit("end", { type: "end", playbackTime });
         sequencer.done = true;
       }
     });
@@ -71,9 +64,9 @@ export default class MMLEmitter extends EventEmitter {
       this.emit("end", { type: "end", playbackTime });
     }
 
-    let nextPlaybackTime = playbackTime + this.config.interval;
+    let nextPlaybackTime = playbackTime + this._scheduler.interval;
 
-    this.scheduler.insert(nextPlaybackTime, ({ playbackTime }) => {
+    this._scheduler.insert(nextPlaybackTime, ({ playbackTime }) => {
       this._progress(playbackTime);
     });
   }
@@ -82,15 +75,19 @@ export default class MMLEmitter extends EventEmitter {
     noteEvents.forEach((noteEvent) => {
       let playbackTime = this._startTime + noteEvent.time;
       let duration = noteEvent.duration;
-      let gateTime = noteEvent.gateTime;
-      let volume = noteEvent.volume;
+      let velocity = noteEvent.velocity;
+      let quantize = noteEvent.quantize;
 
       noteEvent.noteNumbers.forEach((noteNumber) => {
-        let frequency = toFrequency(noteNumber, this.config.A4Index, this.config.A4Frequency);
-        let event = { type: "note", playbackTime, trackNumber, noteNumber, frequency, duration, gateTime, volume };
-
-        this.emit("note", event);
-        this.tracks[trackNumber].emit("note", event);
+        this.emit("note", {
+          type: "note",
+          playbackTime,
+          trackNumber,
+          noteNumber,
+          duration,
+          velocity,
+          quantize
+        });
       });
     });
   }
