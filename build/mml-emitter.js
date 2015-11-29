@@ -20,9 +20,9 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var _events = require("events");
 
-var _iteratorSequencer = require("iterator-sequencer");
+var _intervalIterator = require("interval-iterator");
 
-var _iteratorSequencer2 = _interopRequireDefault(_iteratorSequencer);
+var _intervalIterator2 = _interopRequireDefault(_intervalIterator);
 
 var _mmlIterator = require("mml-iterator");
 
@@ -55,13 +55,13 @@ var MMLEmitter = (function (_EventEmitter) {
 
     this._scheduler = scheduler;
     this._startTime = 0;
-    this._sequencers = trackSources.map(function (source) {
-      var iter = new _mmlIterator2["default"](source);
-      var sequencer = new _iteratorSequencer2["default"](iter, _this._scheduler.interval);
+    this._iters = trackSources.map(function (source) {
+      var baseIter = new _mmlIterator2["default"](source);
+      var iter = new _intervalIterator2["default"](baseIter, _this._scheduler.interval);
 
-      sequencer.done = false;
+      iter.done = false;
 
-      return sequencer;
+      return iter;
     });
     this._done = false;
   }
@@ -96,22 +96,22 @@ var MMLEmitter = (function (_EventEmitter) {
         return;
       }
 
-      this._sequencers.forEach(function (sequencer, trackNumber) {
-        if (sequencer.done) {
+      this._iters.forEach(function (iter, trackNumber) {
+        if (iter.done) {
           return;
         }
 
-        var items = sequencer.next();
+        var items = iter.next();
 
         _this3._emitNoteEvent(items.value, trackNumber);
 
         if (items.done) {
-          sequencer.done = true;
+          iter.done = true;
         }
       });
 
-      this._done = this._sequencers.every(function (sequencer) {
-        return sequencer.done;
+      this._done = this._iters.every(function (iter) {
+        return iter.done;
       });
 
       if (this._done) {
@@ -157,7 +157,7 @@ var MMLEmitter = (function (_EventEmitter) {
 
 exports["default"] = MMLEmitter;
 module.exports = exports["default"];
-},{"events":5,"iterator-sequencer":13,"mml-iterator":16,"strip-comments":27,"web-audio-scheduler":28}],3:[function(require,module,exports){
+},{"events":5,"interval-iterator":12,"mml-iterator":16,"strip-comments":27,"web-audio-scheduler":28}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -531,7 +531,7 @@ function hasOwn(obj, key) {
   return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
-},{"is-extendable":12}],7:[function(require,module,exports){
+},{"is-extendable":15}],7:[function(require,module,exports){
 'use strict';
 
 var extend = require('extend-shallow');
@@ -948,23 +948,8 @@ utils.strip = function(lines) {
 };
 
 },{"cr":4,"noncharacters":23,"quoted-string-regex":25,"strip-bom-string":26}],12:[function(require,module,exports){
-/*!
- * is-extendable <https://github.com/jonschlinkert/is-extendable>
- *
- * Copyright (c) 2015, Jon Schlinkert.
- * Licensed under the MIT License.
- */
-
-'use strict';
-
-module.exports = function isExtendable(val) {
-  return typeof val !== 'undefined' && val !== null
-    && (typeof val === 'object' || typeof val === 'function');
-};
-
-},{}],13:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
-},{"./lib":15,"dup":1}],14:[function(require,module,exports){
+},{"./lib":14,"dup":1}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -977,9 +962,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var ITERATOR = typeof Symbol !== "undefined" ? Symbol.iterator : "Symbol(Symbol.iterator)";
 
-var IteratorSequencer = (function () {
-  function IteratorSequencer(iter, interval) {
-    _classCallCheck(this, IteratorSequencer);
+var IntervalIterator = (function () {
+  function IntervalIterator(iter, interval) {
+    _classCallCheck(this, IntervalIterator);
 
     this.iter = iter;
     this.interval = +interval;
@@ -989,7 +974,7 @@ var IteratorSequencer = (function () {
     this._done = false;
   }
 
-  _createClass(IteratorSequencer, [{
+  _createClass(IntervalIterator, [{
     key: "next",
     value: function next() {
       var t0 = this._currentTime + this.interval;
@@ -1048,12 +1033,12 @@ var IteratorSequencer = (function () {
     }
   }]);
 
-  return IteratorSequencer;
+  return IntervalIterator;
 })();
 
-exports["default"] = IteratorSequencer;
+exports["default"] = IntervalIterator;
 module.exports = exports["default"];
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1062,13 +1047,28 @@ Object.defineProperty(exports, "__esModule", {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-var _IteratorSequencer = require("./IteratorSequencer");
+var _IntervalIterator = require("./IntervalIterator");
 
-var _IteratorSequencer2 = _interopRequireDefault(_IteratorSequencer);
+var _IntervalIterator2 = _interopRequireDefault(_IntervalIterator);
 
-exports["default"] = _IteratorSequencer2["default"];
+exports["default"] = _IntervalIterator2["default"];
 module.exports = exports["default"];
-},{"./IteratorSequencer":14}],16:[function(require,module,exports){
+},{"./IntervalIterator":13}],15:[function(require,module,exports){
+/*!
+ * is-extendable <https://github.com/jonschlinkert/is-extendable>
+ *
+ * Copyright (c) 2015, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+'use strict';
+
+module.exports = function isExtendable(val) {
+  return typeof val !== 'undefined' && val !== null
+    && (typeof val === 'object' || typeof val === 'function');
+};
+
+},{}],16:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
 },{"./lib":22,"dup":1}],17:[function(require,module,exports){
 "use strict";
