@@ -3,7 +3,7 @@
 [![NPM Version](http://img.shields.io/npm/v/mml-emitter.svg?style=flat-square)](https://www.npmjs.org/package/mml-emitter)
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](http://mohayonao.mit-license.org/)
 
-> MML(Music Macro Language) event sequencer for Web Audio API
+> MML(Music Macro Language) event emitter for Web Audio API
 
 ## Installation
 
@@ -23,8 +23,8 @@ downloads:
 #### Instance methods
 _Also implements methods from the interface [EventEmitter](https://nodejs.org/api/events.html)._
 
-- `start(): self`
-- `stop(): self`
+- `start(): void`
+- `stop(): void`
 
 #### Events
 - `note`
