@@ -11,11 +11,12 @@ export default class MMLEmitter extends EventEmitter {
 
     let scheduler = config.scheduler || new WebAudioScheduler(config);
     let trackSources = stripComments(source).split(";").filter(source => !!source.trim());
+    let MMLIteratorClass = config.MMLIterator || MMLIterator;
 
     this._scheduler = scheduler;
     this._startTime = 0;
     this._iters = trackSources.map((source) => {
-      let baseIter = new MMLIterator(source);
+      let baseIter = new MMLIteratorClass(source, config);
       let iter = new IntervalIterator(baseIter, this._scheduler.interval);
 
       iter.done = false;
