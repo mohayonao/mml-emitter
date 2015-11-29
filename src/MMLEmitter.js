@@ -29,14 +29,10 @@ export default class MMLEmitter extends EventEmitter {
     this._scheduler.start(({ playbackTime }) => {
       this._progress(playbackTime);
     });
-
-    return this;
   }
 
   stop() {
     this._scheduler.stop(true);
-
-    return this;
   }
 
   _progress(playbackTime) {

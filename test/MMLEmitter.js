@@ -47,18 +47,22 @@ describe("MMLEmitter", () => {
       assert(emitter instanceof MMLEmitter);
     });
   });
-  describe("#start(): self", () => {
+  describe("#start(): void", () => {
     it("works", () => {
       let emitter = new MMLEmitter("", { timerAPI: tickable });
 
-      assert(emitter.start() === emitter);
+      assert.doesNotThrow(() => {
+        emitter.start();
+      });
     });
   });
-  describe("#stop(): self", () => {
+  describe("#stop(): void", () => {
     it("works", () => {
       let emitter = new MMLEmitter("", { timerAPI: tickable });
 
-      assert(emitter.stop() === emitter);
+      assert.doesNotThrow(() => {
+        emitter.stop();
+      });
     });
   });
   describe("emit", () => {
