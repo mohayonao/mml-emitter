@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import IteratorSequencer from "iterator-sequencer";
+import IntervalIterator from "interval-iterator";
 import MMLIterator from "mml-iterator";
 import stripComments from "strip-comments";
 import WebAudioScheduler from "web-audio-scheduler";
@@ -13,13 +13,13 @@ export default class MMLEmitter extends EventEmitter {
 
     this._scheduler = scheduler;
     this._startTime = 0;
-    this._sequencers = trackSources.map((source) => {
-      let iter = new MMLIterator(source);
-      let sequencer = new IteratorSequencer(iter, this._scheduler.interval);
+    this._iters = trackSources.map((source) => {
+      let baseIter = new MMLIterator(source);
+      let iter = new IntervalIterator(baseIter, this._scheduler.interval);
 
-      sequencer.done = false;
+      iter.done = false;
 
-      return sequencer;
+      return iter;
     });
     this._done = false;
   }
@@ -44,21 +44,21 @@ export default class MMLEmitter extends EventEmitter {
       return;
     }
 
-    this._sequencers.forEach((sequencer, trackNumber) => {
-      if (sequencer.done) {
+    this._iters.forEach((iter, trackNumber) => {
+      if (iter.done) {
         return;
       }
 
-      let items = sequencer.next();
+      let items = iter.next();
 
       this._emitNoteEvent(items.value, trackNumber);
 
       if (items.done) {
-        sequencer.done = true;
+        iter.done = true;
       }
     });
 
-    this._done = this._sequencers.every(sequencer => sequencer.done);
+    this._done = this._iters.every(iter => iter.done);
 
     if (this._done) {
       this.emit("end", { type: "end", playbackTime });
