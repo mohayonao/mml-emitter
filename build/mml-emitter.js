@@ -77,15 +77,11 @@ var MMLEmitter = (function (_EventEmitter) {
 
         _this2._progress(playbackTime);
       });
-
-      return this;
     }
   }, {
     key: "stop",
     value: function stop() {
       this._scheduler.stop(true);
-
-      return this;
     }
   }, {
     key: "_progress",
@@ -101,11 +97,11 @@ var MMLEmitter = (function (_EventEmitter) {
           return;
         }
 
-        var items = iter.next();
+        var iterItem = iter.next();
 
-        _this3._emitNoteEvent(items.value, trackNumber);
+        _this3._emitNoteEvent(iterItem.value, trackNumber);
 
-        if (items.done) {
+        if (iterItem.done) {
           iter.done = true;
         }
       });
@@ -133,20 +129,13 @@ var MMLEmitter = (function (_EventEmitter) {
 
       noteEvents.forEach(function (noteEvent) {
         var playbackTime = _this4._startTime + noteEvent.time;
+        var noteNumber = noteEvent.noteNumber;
         var duration = noteEvent.duration;
         var velocity = noteEvent.velocity;
         var quantize = noteEvent.quantize;
 
-        noteEvent.noteNumbers.forEach(function (noteNumber) {
-          _this4.emit("note", {
-            type: "note",
-            playbackTime: playbackTime,
-            trackNumber: trackNumber,
-            noteNumber: noteNumber,
-            duration: duration,
-            velocity: velocity,
-            quantize: quantize
-          });
+        _this4.emit("note", {
+          type: "note", playbackTime: playbackTime, trackNumber: trackNumber, noteNumber: noteNumber, duration: duration, velocity: velocity, quantize: quantize
         });
       });
     }
@@ -1121,6 +1110,7 @@ var MMLIterator = (function () {
     this._commands = new _MMLParser2["default"](source).parse();
     this._commandIndex = 0;
     this._processedTime = 0;
+    this._iterator = null;
     this._octave = _DefaultParams2["default"].octave;
     this._noteLength = [_DefaultParams2["default"].length];
     this._velocity = _DefaultParams2["default"].velocity;
@@ -1138,13 +1128,23 @@ var MMLIterator = (function () {
   }, {
     key: "next",
     value: function next() {
+      if (this._iterator) {
+        var iterItem = this._iterator.next();
+
+        if (!iterItem.done) {
+          return iterItem;
+        }
+      }
+
       var command = this._forward(true);
 
       if (command.type === _Syntax2["default"].Note) {
-        return { done: false, value: this[command.type](command) };
+        this._iterator = this[command.type](command);
       } else {
         return { done: true, value: null };
       }
+
+      return this.next();
     }
   }, {
     key: ITERATOR,
@@ -1222,7 +1222,9 @@ var MMLIterator = (function () {
 
       this._processedTime = this._processedTime + duration;
 
-      return { time: time, duration: duration, noteNumbers: noteNumbers, velocity: velocity, quantize: quantize };
+      return noteNumbers.map(function (noteNumber) {
+        return { time: time, duration: duration, noteNumber: noteNumber, velocity: velocity, quantize: quantize };
+      })[Symbol.iterator]();
     }
   }, {
     key: _Syntax2["default"].Octave,
