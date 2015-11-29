@@ -49,11 +49,11 @@ export default class MMLEmitter extends EventEmitter {
         return;
       }
 
-      let items = iter.next();
+      let iterItem = iter.next();
 
-      this._emitNoteEvent(items.value, trackNumber);
+      this._emitNoteEvent(iterItem.value, trackNumber);
 
-      if (items.done) {
+      if (iterItem.done) {
         iter.done = true;
       }
     });
@@ -74,20 +74,10 @@ export default class MMLEmitter extends EventEmitter {
   _emitNoteEvent(noteEvents, trackNumber) {
     noteEvents.forEach((noteEvent) => {
       let playbackTime = this._startTime + noteEvent.time;
-      let duration = noteEvent.duration;
-      let velocity = noteEvent.velocity;
-      let quantize = noteEvent.quantize;
+      let { noteNumber, duration, velocity, quantize } = noteEvent;
 
-      noteEvent.noteNumbers.forEach((noteNumber) => {
-        this.emit("note", {
-          type: "note",
-          playbackTime,
-          trackNumber,
-          noteNumber,
-          duration,
-          velocity,
-          quantize
-        });
+      this.emit("note", {
+        type: "note", playbackTime, trackNumber, noteNumber, duration, velocity, quantize
       });
     });
   }
