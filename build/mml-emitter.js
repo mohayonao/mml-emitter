@@ -28,6 +28,10 @@ var _mmlIterator = require("mml-iterator");
 
 var _mmlIterator2 = _interopRequireDefault(_mmlIterator);
 
+var _objectAssign = require("object-assign");
+
+var _objectAssign2 = _interopRequireDefault(_objectAssign);
+
 var _stripComments = require("strip-comments");
 
 var _stripComments2 = _interopRequireDefault(_stripComments);
@@ -52,11 +56,12 @@ var MMLEmitter = (function (_EventEmitter) {
     var trackSources = (0, _stripComments2["default"])(source).split(";").filter(function (source) {
       return !!source.trim();
     });
+    var MMLIteratorClass = config.MMLIterator || _mmlIterator2["default"];
 
     this._scheduler = scheduler;
     this._startTime = 0;
     this._iters = trackSources.map(function (source) {
-      var baseIter = new _mmlIterator2["default"](source);
+      var baseIter = new MMLIteratorClass(source, config);
       var iter = new _intervalIterator2["default"](baseIter, _this._scheduler.interval);
 
       iter.done = false;
@@ -128,15 +133,10 @@ var MMLEmitter = (function (_EventEmitter) {
       var _this4 = this;
 
       noteEvents.forEach(function (noteEvent) {
+        var type = "note";
         var playbackTime = _this4._startTime + noteEvent.time;
-        var noteNumber = noteEvent.noteNumber;
-        var duration = noteEvent.duration;
-        var velocity = noteEvent.velocity;
-        var quantize = noteEvent.quantize;
 
-        _this4.emit("note", {
-          type: "note", playbackTime: playbackTime, trackNumber: trackNumber, noteNumber: noteNumber, duration: duration, velocity: velocity, quantize: quantize
-        });
+        _this4.emit("note", (0, _objectAssign2["default"])({ type: type, playbackTime: playbackTime, trackNumber: trackNumber }, noteEvent));
       });
     }
   }]);
@@ -146,7 +146,7 @@ var MMLEmitter = (function (_EventEmitter) {
 
 exports["default"] = MMLEmitter;
 module.exports = exports["default"];
-},{"events":5,"interval-iterator":12,"mml-iterator":16,"strip-comments":27,"web-audio-scheduler":28}],3:[function(require,module,exports){
+},{"events":5,"interval-iterator":12,"mml-iterator":16,"object-assign":24,"strip-comments":28,"web-audio-scheduler":29}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -787,7 +787,7 @@ function Code(str, comment) {
 
 module.exports = Code;
 
-},{"./utils":11,"parse-code-context":24}],10:[function(require,module,exports){
+},{"./utils":11,"parse-code-context":25}],10:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -936,7 +936,7 @@ utils.strip = function(lines) {
   return res;
 };
 
-},{"cr":4,"noncharacters":23,"quoted-string-regex":25,"strip-bom-string":26}],12:[function(require,module,exports){
+},{"cr":4,"noncharacters":23,"quoted-string-regex":26,"strip-bom-string":27}],12:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
 },{"./lib":14,"dup":1}],13:[function(require,module,exports){
 "use strict";
@@ -1833,6 +1833,47 @@ module.exports = [
 ];
 
 },{}],24:[function(require,module,exports){
+/* eslint-disable no-unused-vars */
+'use strict';
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+function toObject(val) {
+	if (val === null || val === undefined) {
+		throw new TypeError('Object.assign cannot be called with null or undefined');
+	}
+
+	return Object(val);
+}
+
+module.exports = Object.assign || function (target, source) {
+	var from;
+	var to = toObject(target);
+	var symbols;
+
+	for (var s = 1; s < arguments.length; s++) {
+		from = Object(arguments[s]);
+
+		for (var key in from) {
+			if (hasOwnProperty.call(from, key)) {
+				to[key] = from[key];
+			}
+		}
+
+		if (Object.getOwnPropertySymbols) {
+			symbols = Object.getOwnPropertySymbols(from);
+			for (var i = 0; i < symbols.length; i++) {
+				if (propIsEnumerable.call(from, symbols[i])) {
+					to[symbols[i]] = from[symbols[i]];
+				}
+			}
+		}
+	}
+
+	return to;
+};
+
+},{}],25:[function(require,module,exports){
 /*!
  * parse-code-context <https://github.com/jonschlinkert/parse-code-context>
  * Regex originally sourced and modified from <https://github.com/visionmedia/dox>.
@@ -1946,7 +1987,7 @@ module.exports = function (str, i) {
   return null;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 /*!
  * quoted-string-regex <https://github.com/jonschlinkert/quoted-string-regex>
  *
@@ -1960,7 +2001,7 @@ module.exports = function() {
   return /'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/g;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /*!
  * strip-bom-string <https://github.com/jonschlinkert/strip-bom-string>
  *
@@ -1977,7 +2018,7 @@ module.exports = function(str) {
   return str;
 };
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 'use strict';
 
 var extract = require('extract-comments');
@@ -2090,9 +2131,9 @@ module.exports.block = block;
 module.exports.first = first;
 module.exports.line = line;
 
-},{"extract-comments":7}],28:[function(require,module,exports){
+},{"extract-comments":7}],29:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
-},{"./lib":31,"dup":1}],29:[function(require,module,exports){
+},{"./lib":32,"dup":1}],30:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -2275,7 +2316,7 @@ var WebAudioScheduler = (function (_EventEmitter) {
 exports["default"] = WebAudioScheduler;
 module.exports = exports["default"];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./defaultContext":30,"./utils/defaults":32,"events":5}],30:[function(require,module,exports){
+},{"./defaultContext":31,"./utils/defaults":33,"events":5}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2291,7 +2332,7 @@ exports["default"] = Object.defineProperties({}, {
   }
 });
 module.exports = exports["default"];
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2306,7 +2347,7 @@ var _WebAudioScheduler2 = _interopRequireDefault(_WebAudioScheduler);
 
 exports["default"] = _WebAudioScheduler2["default"];
 module.exports = exports["default"];
-},{"./WebAudioScheduler":29}],32:[function(require,module,exports){
+},{"./WebAudioScheduler":30}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

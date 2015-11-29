@@ -2,17 +2,14 @@ import assert from "power-assert";
 import sinon from "sinon";
 import tickable from "tickable-timer";
 import MMLEmitter from "../src/MMLEmitter";
+import _pick from "lodash.pick";
 
-function createNoteEvent(playbackTime, trackNumber, noteNumber, duration) {
-  return {
-    type: "note",
-    playbackTime: playbackTime,
-    trackNumber: trackNumber,
-    noteNumber: noteNumber,
-    duration: duration,
-    velocity: 100,
-    quantize: 75
-  };
+function noteEvent(playbackTime, trackNumber, time, noteNumber) {
+  return { type: "note", playbackTime, trackNumber, time, noteNumber };
+}
+
+function pick(target) {
+  return _pick(target, [ "type", "playbackTime", "trackNumber", "time", "noteNumber" ]);
 }
 
 describe("MMLEmitter", () => {
@@ -79,17 +76,17 @@ describe("MMLEmitter", () => {
       tickable.tick(250);
       assert(onNote.callCount === 3);
       assert(onEnd.callCount === 0);
-      assert.deepEqual(onNote.args[0], [ createNoteEvent(1.000, 0, 60, 0.50) ]);
-      assert.deepEqual(onNote.args[1], [ createNoteEvent(1.000, 1, 57, 0.25) ]);
-      assert.deepEqual(onNote.args[2], [ createNoteEvent(1.250, 1, 57, 0.25) ]);
+      assert.deepEqual(pick(onNote.args[0][0]), noteEvent(1.000, 0, 0.000, 60));
+      assert.deepEqual(pick(onNote.args[1][0]), noteEvent(1.000, 1, 0.000, 57));
+      assert.deepEqual(pick(onNote.args[2][0]), noteEvent(1.250, 1, 0.250, 57));
       onNote.reset();
       onEnd.reset();
 
       tickable.tick(250);
       assert(onNote.callCount === 2);
       assert(onEnd.callCount === 0);
-      assert.deepEqual(onNote.args[0], [ createNoteEvent(1.500, 0, 64, 0.50) ]);
-      assert.deepEqual(onNote.args[1], [ createNoteEvent(1.500, 1, 57, 0.25) ]);
+      assert.deepEqual(pick(onNote.args[0][0]), noteEvent(1.500, 0, 0.500, 64));
+      assert.deepEqual(pick(onNote.args[1][0]), noteEvent(1.500, 1, 0.500, 57));
       onNote.reset();
       onEnd.reset();
 
@@ -102,8 +99,8 @@ describe("MMLEmitter", () => {
       tickable.tick(250);
       assert(onNote.callCount === 2);
       assert(onEnd.callCount === 0);
-      assert.deepEqual(onNote.args[0], [ createNoteEvent(2.000, 0, 67, 0.50) ]);
-      assert.deepEqual(onNote.args[1], [ createNoteEvent(2.000, 1, 55, 0.25) ]);
+      assert.deepEqual(pick(onNote.args[0][0]), noteEvent(2.000, 0, 1.000, 67));
+      assert.deepEqual(pick(onNote.args[1][0]), noteEvent(2.000, 1, 1.000, 55));
       onNote.reset();
       onEnd.reset();
 
@@ -116,7 +113,7 @@ describe("MMLEmitter", () => {
       tickable.tick(250);
       assert(onNote.callCount === 0);
       assert(onEnd.callCount === 1);
-      assert.deepEqual(onEnd.args[0], [ { type: "end", playbackTime: 2.5 } ]);
+      assert.deepEqual(onEnd.args[0][0], { type: "end", playbackTime: 2.5 });
       onEnd.reset();
 
       tickable.tick(250);

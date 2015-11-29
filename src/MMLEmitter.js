@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
 import IntervalIterator from "interval-iterator";
 import MMLIterator from "mml-iterator";
+import assign from "object-assign";
 import stripComments from "strip-comments";
 import WebAudioScheduler from "web-audio-scheduler";
 
@@ -10,11 +11,12 @@ export default class MMLEmitter extends EventEmitter {
 
     let scheduler = config.scheduler || new WebAudioScheduler(config);
     let trackSources = stripComments(source).split(";").filter(source => !!source.trim());
+    let MMLIteratorClass = config.MMLIterator || MMLIterator;
 
     this._scheduler = scheduler;
     this._startTime = 0;
     this._iters = trackSources.map((source) => {
-      let baseIter = new MMLIterator(source);
+      let baseIter = new MMLIteratorClass(source, config);
       let iter = new IntervalIterator(baseIter, this._scheduler.interval);
 
       iter.done = false;
@@ -69,12 +71,10 @@ export default class MMLEmitter extends EventEmitter {
 
   _emitNoteEvent(noteEvents, trackNumber) {
     noteEvents.forEach((noteEvent) => {
+      let type = "note";
       let playbackTime = this._startTime + noteEvent.time;
-      let { noteNumber, duration, velocity, quantize } = noteEvent;
 
-      this.emit("note", {
-        type: "note", playbackTime, trackNumber, noteNumber, duration, velocity, quantize
-      });
+      this.emit("note", assign({ type, playbackTime, trackNumber }, noteEvent));
     });
   }
 }
