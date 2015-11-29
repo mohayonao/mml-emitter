@@ -1,19 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.MMLEmitter = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 module.exports = require("./lib");
 
-},{"./lib":4}],2:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = {
-  interval: 0.25,
-  A4Frequency: 440,
-  A4Index: 69
-};
-module.exports = exports["default"];
-},{}],3:[function(require,module,exports){
+},{"./lib":3}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -32,33 +20,21 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var _events = require("events");
 
-var _mmlIterator = require("mml-iterator");
-
-var _mmlIterator2 = _interopRequireDefault(_mmlIterator);
-
 var _iteratorSequencer = require("iterator-sequencer");
 
 var _iteratorSequencer2 = _interopRequireDefault(_iteratorSequencer);
 
-var _webAudioScheduler = require("web-audio-scheduler");
+var _mmlIterator = require("mml-iterator");
 
-var _webAudioScheduler2 = _interopRequireDefault(_webAudioScheduler);
-
-var _DefaultConfig = require("./DefaultConfig");
-
-var _DefaultConfig2 = _interopRequireDefault(_DefaultConfig);
+var _mmlIterator2 = _interopRequireDefault(_mmlIterator);
 
 var _stripComments = require("strip-comments");
 
 var _stripComments2 = _interopRequireDefault(_stripComments);
 
-var _utilsXtend = require("./utils/xtend");
+var _webAudioScheduler = require("web-audio-scheduler");
 
-var _utilsXtend2 = _interopRequireDefault(_utilsXtend);
-
-var _utilsToFrequency = require("./utils/toFrequency");
-
-var _utilsToFrequency2 = _interopRequireDefault(_utilsToFrequency);
+var _webAudioScheduler2 = _interopRequireDefault(_webAudioScheduler);
 
 var MMLEmitter = (function (_EventEmitter) {
   _inherits(MMLEmitter, _EventEmitter);
@@ -77,16 +53,11 @@ var MMLEmitter = (function (_EventEmitter) {
       return !!source.trim();
     });
 
-    this.config = (0, _utilsXtend2["default"])(_DefaultConfig2["default"], config);
-    this.tracks = trackSources.map(function () {
-      return new _events.EventEmitter();
-    });
-    this.scheduler = scheduler;
-
+    this._scheduler = scheduler;
     this._startTime = 0;
     this._sequencers = trackSources.map(function (source) {
-      var iter = new _mmlIterator2["default"](source, _this.config);
-      var sequencer = new _iteratorSequencer2["default"](iter, _this.config.interval);
+      var iter = new _mmlIterator2["default"](source);
+      var sequencer = new _iteratorSequencer2["default"](iter, _this._scheduler.interval);
 
       sequencer.done = false;
 
@@ -100,8 +71,8 @@ var MMLEmitter = (function (_EventEmitter) {
     value: function start() {
       var _this2 = this;
 
-      this._startTime = this.scheduler.currentTime;
-      this.scheduler.start(function (_ref) {
+      this._startTime = this._scheduler.currentTime;
+      this._scheduler.start(function (_ref) {
         var playbackTime = _ref.playbackTime;
 
         _this2._progress(playbackTime);
@@ -112,7 +83,7 @@ var MMLEmitter = (function (_EventEmitter) {
   }, {
     key: "stop",
     value: function stop() {
-      this.scheduler.stop(true);
+      this._scheduler.stop(true);
 
       return this;
     }
@@ -135,7 +106,6 @@ var MMLEmitter = (function (_EventEmitter) {
         _this3._emitNoteEvent(items.value, trackNumber);
 
         if (items.done) {
-          _this3.tracks[trackNumber].emit("end", { type: "end", playbackTime: playbackTime });
           sequencer.done = true;
         }
       });
@@ -148,9 +118,9 @@ var MMLEmitter = (function (_EventEmitter) {
         this.emit("end", { type: "end", playbackTime: playbackTime });
       }
 
-      var nextPlaybackTime = playbackTime + this.config.interval;
+      var nextPlaybackTime = playbackTime + this._scheduler.interval;
 
-      this.scheduler.insert(nextPlaybackTime, function (_ref2) {
+      this._scheduler.insert(nextPlaybackTime, function (_ref2) {
         var playbackTime = _ref2.playbackTime;
 
         _this3._progress(playbackTime);
@@ -164,15 +134,19 @@ var MMLEmitter = (function (_EventEmitter) {
       noteEvents.forEach(function (noteEvent) {
         var playbackTime = _this4._startTime + noteEvent.time;
         var duration = noteEvent.duration;
-        var gateTime = noteEvent.gateTime;
-        var volume = noteEvent.volume;
+        var velocity = noteEvent.velocity;
+        var quantize = noteEvent.quantize;
 
         noteEvent.noteNumbers.forEach(function (noteNumber) {
-          var frequency = (0, _utilsToFrequency2["default"])(noteNumber, _this4.config.A4Index, _this4.config.A4Frequency);
-          var event = { type: "note", playbackTime: playbackTime, trackNumber: trackNumber, noteNumber: noteNumber, frequency: frequency, duration: duration, gateTime: gateTime, volume: volume };
-
-          _this4.emit("note", event);
-          _this4.tracks[trackNumber].emit("note", event);
+          _this4.emit("note", {
+            type: "note",
+            playbackTime: playbackTime,
+            trackNumber: trackNumber,
+            noteNumber: noteNumber,
+            duration: duration,
+            velocity: velocity,
+            quantize: quantize
+          });
         });
       });
     }
@@ -183,7 +157,7 @@ var MMLEmitter = (function (_EventEmitter) {
 
 exports["default"] = MMLEmitter;
 module.exports = exports["default"];
-},{"./DefaultConfig":2,"./utils/toFrequency":5,"./utils/xtend":6,"events":8,"iterator-sequencer":16,"mml-iterator":19,"strip-comments":32,"web-audio-scheduler":33}],4:[function(require,module,exports){
+},{"events":5,"iterator-sequencer":13,"mml-iterator":16,"strip-comments":27,"web-audio-scheduler":28}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -198,47 +172,7 @@ var _MMLEmitter2 = _interopRequireDefault(_MMLEmitter);
 
 exports["default"] = _MMLEmitter2["default"];
 module.exports = exports["default"];
-},{"./MMLEmitter":3}],5:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = toFrequency;
-
-function toFrequency(noteNumber, a4Index, a4Frequency) {
-  return a4Frequency * Math.pow(2, (noteNumber - a4Index) / 12);
-}
-
-module.exports = exports["default"];
-},{}],6:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = xtend;
-
-function xtend() {
-  var result = {};
-
-  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-    args[_key] = arguments[_key];
-  }
-
-  args.forEach(function (props) {
-    if (props && typeof props === "object") {
-      Object.keys(props).forEach(function (key) {
-        result[key] = props[key];
-      });
-    }
-  });
-
-  return result;
-}
-
-module.exports = exports["default"];
-},{}],7:[function(require,module,exports){
+},{"./MMLEmitter":2}],4:[function(require,module,exports){
 /*!
  * cr <https://github.com/jonschlinkert/cr>
  *
@@ -262,7 +196,7 @@ module.exports.strip = function(str) {
   return str.split('\r').join('');
 };
 
-},{}],8:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -562,7 +496,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],9:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var isObject = require('is-extendable');
@@ -597,7 +531,7 @@ function hasOwn(obj, key) {
   return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
-},{"is-extendable":15}],10:[function(require,module,exports){
+},{"is-extendable":12}],7:[function(require,module,exports){
 'use strict';
 
 var extend = require('extend-shallow');
@@ -769,7 +703,7 @@ module.exports.line = line;
 
 module.exports.factory = factory;
 
-},{"./lib/block":11,"./lib/line":13,"./lib/utils":14,"extend-shallow":9}],11:[function(require,module,exports){
+},{"./lib/block":8,"./lib/line":10,"./lib/utils":11,"extend-shallow":6}],8:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -822,7 +756,7 @@ function BlockComment(str, idx, end, open, close) {
 
 module.exports = BlockComment;
 
-},{"./code":12,"./utils":14}],12:[function(require,module,exports){
+},{"./code":9,"./utils":11}],9:[function(require,module,exports){
 'use strict';
 
 var codeContext = require('parse-code-context');
@@ -864,7 +798,7 @@ function Code(str, comment) {
 
 module.exports = Code;
 
-},{"./utils":14,"parse-code-context":29}],13:[function(require,module,exports){
+},{"./utils":11,"parse-code-context":24}],10:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -904,7 +838,7 @@ function LineComment(str, idx, end, open, close) {
 
 module.exports = LineComment;
 
-},{"./utils":14}],14:[function(require,module,exports){
+},{"./utils":11}],11:[function(require,module,exports){
 'use strict';
 
 var cr = require('cr');
@@ -1013,7 +947,7 @@ utils.strip = function(lines) {
   return res;
 };
 
-},{"cr":7,"noncharacters":28,"quoted-string-regex":30,"strip-bom-string":31}],15:[function(require,module,exports){
+},{"cr":4,"noncharacters":23,"quoted-string-regex":25,"strip-bom-string":26}],12:[function(require,module,exports){
 /*!
  * is-extendable <https://github.com/jonschlinkert/is-extendable>
  *
@@ -1028,9 +962,9 @@ module.exports = function isExtendable(val) {
     && (typeof val === 'object' || typeof val === 'function');
 };
 
-},{}],16:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
-},{"./lib":18,"dup":1}],17:[function(require,module,exports){
+},{"./lib":15,"dup":1}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1119,7 +1053,7 @@ var IteratorSequencer = (function () {
 
 exports["default"] = IteratorSequencer;
 module.exports = exports["default"];
-},{}],18:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1134,36 +1068,24 @@ var _IteratorSequencer2 = _interopRequireDefault(_IteratorSequencer);
 
 exports["default"] = _IteratorSequencer2["default"];
 module.exports = exports["default"];
-},{"./IteratorSequencer":17}],19:[function(require,module,exports){
+},{"./IteratorSequencer":14}],16:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
-},{"./lib":25,"dup":1}],20:[function(require,module,exports){
+},{"./lib":22,"dup":1}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = {
-  defaultTempo: 120,
-  minTempo: 30,
-  maxTempo: 240,
-  defaultOctave: 5,
-  minOctave: 0,
-  maxOctave: 8,
-  defaultNoteLength: 4,
-  minNoteLength: 1,
-  maxNoteLength: 64,
-  defaultQuantize: 6,
-  minQuantize: 0,
-  maxQuantize: 8,
-  defaultVolume: 12,
-  minVolume: 0,
-  maxVolume: 16,
-  defaultLoopCount: 2,
-  maxLoopCount: 999,
-  octaveShiftDirection: 1
+  tempo: 120,
+  octave: 4,
+  length: 4,
+  velocity: 100,
+  quantize: 75,
+  loopCount: 2
 };
 module.exports = exports["default"];
-},{}],21:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1180,41 +1102,30 @@ var _Syntax = require("./Syntax");
 
 var _Syntax2 = _interopRequireDefault(_Syntax);
 
-var _DefaultConfig = require("./DefaultConfig");
+var _DefaultParams = require("./DefaultParams");
 
-var _DefaultConfig2 = _interopRequireDefault(_DefaultConfig);
+var _DefaultParams2 = _interopRequireDefault(_DefaultParams);
 
 var _MMLParser = require("./MMLParser");
 
 var _MMLParser2 = _interopRequireDefault(_MMLParser);
 
-var _utilsConstrain = require("./utils/constrain");
-
-var _utilsConstrain2 = _interopRequireDefault(_utilsConstrain);
-
-var _utilsXtend = require("./utils/xtend");
-
-var _utilsXtend2 = _interopRequireDefault(_utilsXtend);
-
 var ITERATOR = typeof Symbol !== "undefined" ? Symbol.iterator : "Symbol(Symbol.iterator)";
 
 var MMLIterator = (function () {
   function MMLIterator(source) {
-    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
     _classCallCheck(this, MMLIterator);
 
     this.source = source;
-    this.config = (0, _utilsXtend2["default"])(_DefaultConfig2["default"], config);
 
     this._commands = new _MMLParser2["default"](source).parse();
     this._commandIndex = 0;
     this._processedTime = 0;
-    this._octave = this.config.defaultOctave;
-    this._noteLength = [this.config.defaultNoteLength];
-    this._quantize = this.config.defaultQuantize;
-    this._volume = this.config.defaultVolume;
-    this._tempo = this.config.defaultTempo;
+    this._octave = _DefaultParams2["default"].octave;
+    this._noteLength = [_DefaultParams2["default"].length];
+    this._velocity = _DefaultParams2["default"].velocity;
+    this._quantize = _DefaultParams2["default"].quantize;
+    this._tempo = _DefaultParams2["default"].tempo;
     this._infiniteLoopIndex = -1;
     this._loopStack = [];
   }
@@ -1225,20 +1136,9 @@ var MMLIterator = (function () {
       return this._commandIndex < this._commands.length;
     }
   }, {
-    key: "forward",
-    value: function forward() {
-      while (this.hasNext() && this._commands[this._commandIndex].type !== _Syntax2["default"].Note) {
-        var command = this._commands[this._commandIndex++];
-
-        this[command.type](command);
-      }
-
-      return this._commands[this._commandIndex++] || {};
-    }
-  }, {
     key: "next",
     value: function next() {
-      var command = this.forward();
+      var command = this._forward(true);
 
       if (command.type === _Syntax2["default"].Note) {
         return { done: false, value: this[command.type](command) };
@@ -1250,6 +1150,23 @@ var MMLIterator = (function () {
     key: ITERATOR,
     value: function value() {
       return this;
+    }
+  }, {
+    key: "_forward",
+    value: function _forward(forward) {
+      while (this.hasNext() && this._commands[this._commandIndex].type !== _Syntax2["default"].Note) {
+        var command = this._commands[this._commandIndex++];
+
+        this[command.type](command);
+      }
+
+      if (forward && !this.hasNext() && this._infiniteLoopIndex !== -1) {
+        this._commandIndex = this._infiniteLoopIndex;
+
+        return this._forward(false);
+      }
+
+      return this._commands[this._commandIndex++] || {};
     }
   }, {
     key: "_calcDuration",
@@ -1276,8 +1193,7 @@ var MMLIterator = (function () {
             break;
         }
 
-        var value = elem !== null ? elem : _this.config.defaultNoteLength;
-        var length = (0, _utilsConstrain2["default"])(value, _this.config.minNoteLength, _this.config.maxNoteLength);
+        var length = elem !== null ? elem : _DefaultParams2["default"].length;
 
         return 60 / _this._tempo * (4 / length);
       });
@@ -1298,69 +1214,51 @@ var MMLIterator = (function () {
 
       var time = this._processedTime;
       var duration = this._calcDuration(command.noteLength);
-      var gateTime = duration * (this._quantize / this.config.maxQuantize);
       var noteNumbers = command.noteNumbers.map(function (noteNumber) {
         return _this2._calcNoteNumber(noteNumber);
       });
-      var volume = this._volume / this.config.maxVolume;
+      var quantize = this._quantize;
+      var velocity = this._velocity;
 
       this._processedTime = this._processedTime + duration;
 
-      return { time: time, duration: duration, gateTime: gateTime, noteNumbers: noteNumbers, volume: volume };
+      return { time: time, duration: duration, noteNumbers: noteNumbers, velocity: velocity, quantize: quantize };
     }
   }, {
     key: _Syntax2["default"].Octave,
     value: function value(command) {
-      var value = command.value !== null ? command.value : this.config.defaultOctave;
-      var octave = (0, _utilsConstrain2["default"])(value, this.config.minOctave, this.config.maxOctave);
-
-      this._octave = octave;
+      this._octave = command.value !== null ? command.value : _DefaultParams2["default"].octave;
     }
   }, {
     key: _Syntax2["default"].OctaveShift,
     value: function value(command) {
       var value = command.value !== null ? command.value : 1;
-      var direction = command.direction * this.config.octaveShiftDirection;
-      var octave = (0, _utilsConstrain2["default"])(this._octave + value * direction, this.config.minOctave, this.config.maxOctave);
 
-      this._octave = octave;
+      this._octave += value * command.direction;
     }
   }, {
     key: _Syntax2["default"].NoteLength,
     value: function value(command) {
-      var _this3 = this;
-
       var noteLength = command.noteLength.map(function (value) {
-        value = value !== null ? value : _this3.config.defaultNoteLength;
-
-        return (0, _utilsConstrain2["default"])(value, _this3.config.minNoteLength, _this3.config.maxNoteLength);
+        return value !== null ? value : _DefaultParams2["default"].length;
       });
 
       this._noteLength = noteLength;
     }
   }, {
-    key: _Syntax2["default"].NoteQuantize,
+    key: _Syntax2["default"].NoteVelocity,
     value: function value(command) {
-      var value = command.value !== null ? command.value : this.config.defaultQuantize;
-      var quantize = (0, _utilsConstrain2["default"])(value, this.config.minQuantize, this.config.maxQuantize);
-
-      this._quantize = quantize;
+      this._velocity = command.value !== null ? command.value : _DefaultParams2["default"].velocity;
     }
   }, {
-    key: _Syntax2["default"].NoteVolume,
+    key: _Syntax2["default"].NoteQuantize,
     value: function value(command) {
-      var value = command.value !== null ? command.value : this.config.defaultVolume;
-      var volume = (0, _utilsConstrain2["default"])(value, this.config.minVolume, this.config.maxVolume);
-
-      this._volume = volume;
+      this._quantize = command.value !== null ? command.value : _DefaultParams2["default"].quantize;
     }
   }, {
     key: _Syntax2["default"].Tempo,
     value: function value(command) {
-      var value = command.value !== null ? command.value : this.config.defaultTempo;
-      var tempo = (0, _utilsConstrain2["default"])(value, this.config.minTempo, this.config.maxTempo);
-
-      this._tempo = tempo;
+      this._tempo = command.value !== null ? command.value : _DefaultParams2["default"].tempo;
     }
   }, {
     key: _Syntax2["default"].InfiniteLoop,
@@ -1370,8 +1268,7 @@ var MMLIterator = (function () {
   }, {
     key: _Syntax2["default"].LoopBegin,
     value: function value(command) {
-      var value = command.value !== null ? command.value : this.config.defaultLoopCount;
-      var loopCount = (0, _utilsConstrain2["default"])(value, 1, this.config.maxLoopCount);
+      var loopCount = command.value !== null ? command.value : _DefaultParams2["default"].loopCount;
       var loopTopIndex = this._commandIndex;
       var loopOutIndex = -1;
 
@@ -1415,7 +1312,7 @@ var MMLIterator = (function () {
 
 exports["default"] = MMLIterator;
 module.exports = exports["default"];
-},{"./DefaultConfig":20,"./MMLParser":22,"./Syntax":24,"./utils/constrain":26,"./utils/xtend":27}],22:[function(require,module,exports){
+},{"./DefaultParams":17,"./MMLParser":19,"./Syntax":21}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1476,16 +1373,16 @@ var MMLParser = (function () {
           return this.readRest();
         case "o":
           return this.readOctave();
-        case "<":
-          return this.readOctaveShift(+1);
         case ">":
+          return this.readOctaveShift(+1);
+        case "<":
           return this.readOctaveShift(-1);
         case "l":
           return this.readNoteLength();
         case "q":
           return this.readNoteQuantize();
         case "v":
-          return this.readNoteVolume();
+          return this.readNoteVelocity();
         case "t":
           return this.readTempo();
         case "$":
@@ -1525,11 +1422,11 @@ var MMLParser = (function () {
           case "b":
             noteList.push(_this2._readNoteNumber(offset));
             break;
-          case "<":
+          case ">":
             _this2.scanner.next();
             offset += 12;
             break;
-          case ">":
+          case "<":
             _this2.scanner.next();
             offset -= 12;
             break;
@@ -1599,12 +1496,12 @@ var MMLParser = (function () {
       };
     }
   }, {
-    key: "readNoteVolume",
-    value: function readNoteVolume() {
+    key: "readNoteVelocity",
+    value: function readNoteVelocity() {
       this.scanner.expect("v");
 
       return {
-        type: _Syntax2["default"].NoteVolume,
+        type: _Syntax2["default"].NoteVelocity,
         value: this._readArgument(/\d+/)
       };
     }
@@ -1758,7 +1655,7 @@ var MMLParser = (function () {
 
 exports["default"] = MMLParser;
 module.exports = exports["default"];
-},{"./Scanner":23,"./Syntax":24}],23:[function(require,module,exports){
+},{"./Scanner":20,"./Syntax":21}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1851,7 +1748,7 @@ var Scanner = (function () {
 
 exports["default"] = Scanner;
 module.exports = exports["default"];
-},{}],24:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1862,8 +1759,8 @@ exports["default"] = {
   Octave: "Octave",
   OctaveShift: "OctaveShift",
   NoteLength: "NoteLength",
+  NoteVelocity: "NoteVelocity",
   NoteQuantize: "NoteQuantize",
-  NoteVolume: "NoteVolume",
   Tempo: "Tempo",
   InfiniteLoop: "InfiniteLoop",
   LoopBegin: "LoopBegin",
@@ -1871,7 +1768,7 @@ exports["default"] = {
   LoopEnd: "LoopEnd"
 };
 module.exports = exports["default"];
-},{}],25:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1886,22 +1783,7 @@ var _MMLIterator2 = _interopRequireDefault(_MMLIterator);
 
 exports["default"] = _MMLIterator2["default"];
 module.exports = exports["default"];
-},{"./MMLIterator":21}],26:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = constrain;
-
-function constrain(value, minValue, maxValue) {
-  return Math.max(minValue, Math.min(value, maxValue));
-}
-
-module.exports = exports["default"];
-},{}],27:[function(require,module,exports){
-arguments[4][6][0].apply(exports,arguments)
-},{"dup":6}],28:[function(require,module,exports){
+},{"./MMLIterator":18}],23:[function(require,module,exports){
 /*!
  * noncharacters <https://github.com/jonschlinkert/noncharacters>
  *
@@ -1948,7 +1830,7 @@ module.exports = [
   '\uFDEF'
 ];
 
-},{}],29:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 /*!
  * parse-code-context <https://github.com/jonschlinkert/parse-code-context>
  * Regex originally sourced and modified from <https://github.com/visionmedia/dox>.
@@ -2062,7 +1944,7 @@ module.exports = function (str, i) {
   return null;
 };
 
-},{}],30:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 /*!
  * quoted-string-regex <https://github.com/jonschlinkert/quoted-string-regex>
  *
@@ -2076,7 +1958,7 @@ module.exports = function() {
   return /'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/g;
 };
 
-},{}],31:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 /*!
  * strip-bom-string <https://github.com/jonschlinkert/strip-bom-string>
  *
@@ -2093,7 +1975,7 @@ module.exports = function(str) {
   return str;
 };
 
-},{}],32:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 'use strict';
 
 var extract = require('extract-comments');
@@ -2206,9 +2088,9 @@ module.exports.block = block;
 module.exports.first = first;
 module.exports.line = line;
 
-},{"extract-comments":10}],33:[function(require,module,exports){
+},{"extract-comments":7}],28:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
-},{"./lib":36,"dup":1}],34:[function(require,module,exports){
+},{"./lib":31,"dup":1}],29:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -2391,7 +2273,7 @@ var WebAudioScheduler = (function (_EventEmitter) {
 exports["default"] = WebAudioScheduler;
 module.exports = exports["default"];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./defaultContext":35,"./utils/defaults":37,"events":8}],35:[function(require,module,exports){
+},{"./defaultContext":30,"./utils/defaults":32,"events":5}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2407,7 +2289,7 @@ exports["default"] = Object.defineProperties({}, {
   }
 });
 module.exports = exports["default"];
-},{}],36:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2422,7 +2304,7 @@ var _WebAudioScheduler2 = _interopRequireDefault(_WebAudioScheduler);
 
 exports["default"] = _WebAudioScheduler2["default"];
 module.exports = exports["default"];
-},{"./WebAudioScheduler":34}],37:[function(require,module,exports){
+},{"./WebAudioScheduler":29}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
