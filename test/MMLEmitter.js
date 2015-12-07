@@ -22,7 +22,7 @@ describe("MMLEmitter", () => {
     global.Date = {
       now() {
         return timestamp;
-      }
+      },
     };
   });
   beforeEach(() => {
@@ -70,7 +70,7 @@ describe("MMLEmitter", () => {
 
       tickable.tick(1000);
       emitter.on("note", onNote);
-      emitter.on("end", onEnd);
+      emitter.on("end:all", onEnd);
       emitter.start();
 
       tickable.tick(250);
@@ -112,13 +112,13 @@ describe("MMLEmitter", () => {
 
       tickable.tick(250);
       assert(onNote.callCount === 0);
-      assert(onEnd.callCount === 1);
-      assert.deepEqual(onEnd.args[0][0], { type: "end", playbackTime: 2.5 });
+      assert(onEnd.callCount === 0);
       onEnd.reset();
 
       tickable.tick(250);
       assert(onNote.callCount === 0);
-      assert(onEnd.callCount === 0);
+      assert(onEnd.callCount === 1);
+      assert.deepEqual(onEnd.args[0][0], { type: "end:all", playbackTime: 2.75 });
     });
   });
 });
