@@ -22,7 +22,7 @@ describe("MMLEmitter", () => {
     global.Date = {
       now() {
         return timestamp;
-      }
+      },
     };
   });
   beforeEach(() => {
