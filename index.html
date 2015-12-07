@@ -74,7 +74,7 @@
       console.log("NOTE: " + JSON.stringify(e));
       playNote(e);
     });
-    mmlEmitter.on("end", function(e) {
+    mmlEmitter.on("end:all", function(e) {
       console.log("END : " + JSON.stringify(e));
       mmlEmitter.stop();
     });

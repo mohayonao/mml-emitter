@@ -23,8 +23,8 @@ downloads:
 #### Instance methods
 _Also implements methods from the interface [EventEmitter](https://nodejs.org/api/events.html)._
 
-- `start(): void`
-- `stop(): void`
+- `start([ t0: number ]): void`
+- `stop([ t0: number ]): void`
 
 #### Events
 - `note`
@@ -37,6 +37,10 @@ _Also implements methods from the interface [EventEmitter](https://nodejs.org/ap
   - `quantize: number`
 - `end`
   - `type: "end"`
+  - `playbackTime: number`
+  - `trackNumber: number`
+- `end:all`
+  - `type: "end:all"`
   - `playbackTime: number`
 
 ## Example
@@ -51,7 +55,7 @@ let mmlEmitter = new MMLEmitter(mml, config);
 mmlEmitter.on("note", (e) => {
   console.log("NOTE: " + JSON.stringify(e));
 });
-mmlEmitter.on("end", (e) => {
+mmlEmitter.on("end:all", (e) => {
   console.log("END : " + JSON.stringify(e));
   mmlEmitter.stop();
 });
