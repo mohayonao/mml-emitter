@@ -62,7 +62,7 @@ var MMLEmitter = (function (_SeqEmitter) {
 
 exports["default"] = MMLEmitter;
 module.exports = exports["default"];
-},{"./reverseOctave":4,"mml-iterator":17,"seq-emitter":28,"strip-comments":33}],3:[function(require,module,exports){
+},{"./reverseOctave":4,"mml-iterator":14,"seq-emitter":25,"strip-comments":33}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -451,7 +451,7 @@ function hasOwn(obj, key) {
   return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
-},{"is-extendable":16}],8:[function(require,module,exports){
+},{"is-extendable":13}],8:[function(require,module,exports){
 'use strict';
 
 var extend = require('extend-shallow');
@@ -718,7 +718,7 @@ function Code(str, comment) {
 
 module.exports = Code;
 
-},{"./utils":12,"parse-code-context":26}],11:[function(require,module,exports){
+},{"./utils":12,"parse-code-context":23}],11:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -867,113 +867,7 @@ utils.strip = function(lines) {
   return res;
 };
 
-},{"cr":5,"noncharacters":24,"quoted-string-regex":27,"strip-bom-string":32}],13:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"./lib":15,"dup":1}],14:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var ITERATOR = typeof Symbol !== "undefined" ? Symbol.iterator : "Symbol(Symbol.iterator)";
-
-var IntervalIterator = (function () {
-  function IntervalIterator(iter, interval) {
-    _classCallCheck(this, IntervalIterator);
-
-    this.iter = iter;
-    this.interval = +interval;
-    this._currentTime = 0;
-    this._iterItem = null;
-    this._doneTime = 0;
-    this._done = false;
-  }
-
-  _createClass(IntervalIterator, [{
-    key: "next",
-    value: function next() {
-      var t0 = this._currentTime + this.interval;
-
-      if (this._done && this._doneTime < t0) {
-        return { done: true, value: [] };
-      }
-
-      var result = [];
-      var iterItem = undefined;
-
-      while ((iterItem = this._next(t0)) !== null) {
-        result.push(iterItem);
-      }
-
-      this._currentTime = t0;
-
-      return { done: false, value: result };
-    }
-  }, {
-    key: ITERATOR,
-    value: function value() {
-      return this;
-    }
-  }, {
-    key: "_next",
-    value: function _next(t0) {
-      if (this._iterItem) {
-        return this._nextIterItem(t0);
-      }
-
-      var iterItem = this.iter.next();
-
-      if (iterItem.done) {
-        this._done = true;
-        return null;
-      }
-
-      this._iterItem = iterItem.value;
-      this._doneTime = this._iterItem.time + (this._iterItem.duration || 0);
-
-      return this._nextIterItem(t0);
-    }
-  }, {
-    key: "_nextIterItem",
-    value: function _nextIterItem(t0) {
-      if (t0 <= this._iterItem.time) {
-        return null;
-      }
-
-      var iterItem = this._iterItem;
-
-      this._iterItem = null;
-
-      return iterItem;
-    }
-  }]);
-
-  return IntervalIterator;
-})();
-
-exports["default"] = IntervalIterator;
-module.exports = exports["default"];
-},{}],15:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _IntervalIterator = require("./IntervalIterator");
-
-var _IntervalIterator2 = _interopRequireDefault(_IntervalIterator);
-
-exports["default"] = _IntervalIterator2["default"];
-module.exports = exports["default"];
-},{"./IntervalIterator":14}],16:[function(require,module,exports){
+},{"cr":5,"noncharacters":21,"quoted-string-regex":24,"strip-bom-string":32}],13:[function(require,module,exports){
 /*!
  * is-extendable <https://github.com/jonschlinkert/is-extendable>
  *
@@ -988,9 +882,9 @@ module.exports = function isExtendable(val) {
     && (typeof val === 'object' || typeof val === 'function');
 };
 
-},{}],17:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
-},{"./lib":23,"dup":1}],18:[function(require,module,exports){
+},{"./lib":20,"dup":1}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1005,7 +899,7 @@ exports["default"] = {
   loopCount: 2
 };
 module.exports = exports["default"];
-},{}],19:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1049,6 +943,7 @@ var MMLIterator = (function () {
     this._tempo = _DefaultParams2["default"].tempo;
     this._infiniteLoopIndex = -1;
     this._loopStack = [];
+    this._done = false;
   }
 
   _createClass(MMLIterator, [{
@@ -1059,6 +954,10 @@ var MMLIterator = (function () {
   }, {
     key: "next",
     value: function next() {
+      if (this._done) {
+        return { done: true, value: null };
+      }
+
       if (this._iterator) {
         var iterItem = this._iterator.next();
 
@@ -1072,7 +971,8 @@ var MMLIterator = (function () {
       if (isNoteEvent(command)) {
         this._iterator = this[command.type](command);
       } else {
-        return { done: true, value: null };
+        this._done = true;
+        return { done: false, value: { type: "end", time: this._processedTime } };
       }
 
       return this.next();
@@ -1117,7 +1017,7 @@ var MMLIterator = (function () {
             elem = prev;
             break;
           case 0:
-            elem = dotted = dotted * 2;
+            elem = dotted *= 2;
             break;
           default:
             prev = dotted = elem;
@@ -1143,6 +1043,7 @@ var MMLIterator = (function () {
     value: function value(command) {
       var _this2 = this;
 
+      var type = "note";
       var time = this._processedTime;
       var duration = this._calcDuration(command.noteLength);
       var noteNumbers = command.noteNumbers.map(function (noteNumber) {
@@ -1154,18 +1055,15 @@ var MMLIterator = (function () {
       this._processedTime = this._processedTime + duration;
 
       return arrayToIterator(noteNumbers.map(function (noteNumber) {
-        return { time: time, duration: duration, noteNumber: noteNumber, velocity: velocity, quantize: quantize };
+        return { type: type, time: time, duration: duration, noteNumber: noteNumber, velocity: velocity, quantize: quantize };
       }));
     }
   }, {
     key: _Syntax2["default"].Rest,
     value: function value(command) {
-      var time = this._processedTime;
       var duration = this._calcDuration(command.noteLength);
 
       this._processedTime = this._processedTime + duration;
-
-      return arrayToIterator([{ time: time, duration: duration }]);
     }
   }, {
     key: _Syntax2["default"].Octave,
@@ -1272,7 +1170,7 @@ function isNoteEvent(command) {
   return command.type === _Syntax2["default"].Note || command.type === _Syntax2["default"].Rest;
 }
 module.exports = exports["default"];
-},{"./DefaultParams":18,"./MMLParser":20,"./Syntax":22}],20:[function(require,module,exports){
+},{"./DefaultParams":15,"./MMLParser":17,"./Syntax":19}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1349,6 +1247,8 @@ var MMLParser = (function () {
           return this.readInfiniteLoop();
         case "/":
           return this.readLoop();
+        default:
+        // do nothing
       }
       this.scanner.throwUnexpectedToken();
     }
@@ -1614,7 +1514,7 @@ var MMLParser = (function () {
 
 exports["default"] = MMLParser;
 module.exports = exports["default"];
-},{"./Scanner":21,"./Syntax":22}],21:[function(require,module,exports){
+},{"./Scanner":18,"./Syntax":19}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1707,7 +1607,7 @@ var Scanner = (function () {
 
 exports["default"] = Scanner;
 module.exports = exports["default"];
-},{}],22:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1728,7 +1628,7 @@ exports["default"] = {
   LoopEnd: "LoopEnd"
 };
 module.exports = exports["default"];
-},{}],23:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1743,7 +1643,7 @@ var _MMLIterator2 = _interopRequireDefault(_MMLIterator);
 
 exports["default"] = _MMLIterator2["default"];
 module.exports = exports["default"];
-},{"./MMLIterator":19}],24:[function(require,module,exports){
+},{"./MMLIterator":16}],21:[function(require,module,exports){
 /*!
  * noncharacters <https://github.com/jonschlinkert/noncharacters>
  *
@@ -1790,7 +1690,7 @@ module.exports = [
   '\uFDEF'
 ];
 
-},{}],25:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /* eslint-disable no-unused-vars */
 'use strict';
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1831,7 +1731,7 @@ module.exports = Object.assign || function (target, source) {
 	return to;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 /*!
  * parse-code-context <https://github.com/jonschlinkert/parse-code-context>
  * Regex originally sourced and modified from <https://github.com/visionmedia/dox>.
@@ -1945,7 +1845,7 @@ module.exports = function (str, i) {
   return null;
 };
 
-},{}],27:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 /*!
  * quoted-string-regex <https://github.com/jonschlinkert/quoted-string-regex>
  *
@@ -1959,9 +1859,10 @@ module.exports = function() {
   return /'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/g;
 };
 
-},{}],28:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
-},{"./lib":31,"dup":1}],29:[function(require,module,exports){
+},{"./lib":28,"dup":1}],26:[function(require,module,exports){
+(function (global){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1970,7 +1871,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x4, _x5, _x6) { var _again = true; _function: while (_again) { var object = _x4, property = _x5, receiver = _x6; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x4 = parent; _x5 = property; _x6 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -2008,7 +1909,10 @@ var SeqEmitter = (function (_EventEmitter) {
     this._tracks = tracks.map(function (track, trackNumber) {
       return new _TrackIterator2["default"](track, _this._scheduler.interval, trackNumber);
     });
-    this._startTime = 0;
+    this._startTime = -1;
+    this._stopTime = -1;
+    this._timerId = 0;
+    this._state = "suspended";
   }
 
   _createClass(SeqEmitter, [{
@@ -2016,29 +1920,59 @@ var SeqEmitter = (function (_EventEmitter) {
     value: function start() {
       var _this2 = this;
 
-      this._startTime = this._scheduler.currentTime;
-      this._scheduler.start(function (e) {
-        _this2._process(e.playbackTime);
-      });
+      var t0 = arguments.length <= 0 || arguments[0] === undefined ? this._scheduler.currentTime : arguments[0];
+
+      /* istanbul ignore else */
+      if (this._startTime === -1) {
+        this._startTime = t0;
+        this._scheduler.start();
+        this._timerId = this._scheduler.insert(t0, function (e) {
+          _this2._state = "running";
+          _this2.emit("statechange", { type: "statechange", playbackTime: t0, state: _this2._state });
+          _this2._process(e.playbackTime);
+        });
+      } else {
+        /* eslint no-lonely-if: 0 */
+        if (this._startTime !== -1) {
+          global.console.warn("Failed to execute 'start' on SeqEmitter: cannot call start more than once.");
+        }
+      }
     }
   }, {
     key: "stop",
     value: function stop() {
-      this._scheduler.stop(true);
+      var _this3 = this;
+
+      var t0 = arguments.length <= 0 || arguments[0] === undefined ? this._scheduler.currentTime : arguments[0];
+
+      /* istanbul ignore else */
+      if (this._startTime !== -1 && this._stopTime === -1) {
+        this._stopTime = t0;
+        this._scheduler.insert(t0, function () {
+          _this3._state = "closed";
+          _this3.emit("statechange", { type: "statechange", playbackTime: t0, state: _this3._state });
+          _this3._scheduler.stop();
+          _this3._scheduler.remove(_this3._timerId);
+          _this3._timerId = 0;
+        });
+      } else {
+        if (this._startTime === -1) {
+          global.console.warn("Failed to execute 'stop' on SeqEmitter: cannot call stop without calling start first.");
+        }
+        if (this._stopTime !== -1) {
+          global.console.warn("Failed to execute 'stop' on SeqEmitter: cannot call stop more than once.");
+        }
+      }
     }
   }, {
     key: "_process",
     value: function _process(playbackTime) {
-      var _this3 = this;
+      var _this4 = this;
 
       this._tracks.forEach(function (iter) {
         var iterItem = iter.next();
 
-        _this3._emitEvent(iterItem.value, iter.trackNumber);
-
-        if (iterItem.done) {
-          iter.done = true;
-        }
+        _this4._emitEvent(iterItem.value, iter.trackNumber);
       });
 
       this._tracks = this._tracks.filter(function (iter) {
@@ -2046,26 +1980,33 @@ var SeqEmitter = (function (_EventEmitter) {
       });
 
       if (this._tracks.length === 0) {
-        this.emit("end", { type: "end", playbackTime: playbackTime });
+        this.emit("end:all", { type: "end:all", playbackTime: playbackTime });
       } else {
         var nextPlaybackTime = playbackTime + this._scheduler.interval;
 
-        this._scheduler.insert(nextPlaybackTime, function (e) {
-          _this3._process(e.playbackTime);
+        this._timerId = this._scheduler.insert(nextPlaybackTime, function (e) {
+          _this4._process(e.playbackTime);
         });
       }
     }
   }, {
     key: "_emitEvent",
     value: function _emitEvent(events, trackNumber) {
-      var _this4 = this;
+      var _this5 = this;
 
       events.forEach(function (items) {
-        var type = items.noteNumber != null ? "note" : "ctrl";
-        var playbackTime = _this4._startTime + items.time;
+        var type = items.type;
+        var playbackTime = _this5._startTime + items.time;
 
-        _this4.emit(type, (0, _objectAssign2["default"])({ type: type, playbackTime: playbackTime, trackNumber: trackNumber }, items));
+        if (typeof type === "string") {
+          _this5.emit(type, (0, _objectAssign2["default"])({ playbackTime: playbackTime, trackNumber: trackNumber }, items));
+        }
       });
+    }
+  }, {
+    key: "state",
+    get: function get() {
+      return this._state;
     }
   }]);
 
@@ -2074,12 +2015,15 @@ var SeqEmitter = (function (_EventEmitter) {
 
 exports["default"] = SeqEmitter;
 module.exports = exports["default"];
-},{"./TrackIterator":30,"events":6,"object-assign":25,"web-audio-scheduler":34}],30:[function(require,module,exports){
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./TrackIterator":27,"events":6,"object-assign":22,"web-audio-scheduler":34}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
@@ -2105,12 +2049,27 @@ var TrackIterator = (function (_IntervalIterator) {
     this.done = false;
   }
 
+  _createClass(TrackIterator, [{
+    key: "next",
+    value: function next() {
+      if (this.done) {
+        return { done: true, value: [] };
+      }
+
+      var iterItem = _get(Object.getPrototypeOf(TrackIterator.prototype), "next", this).call(this);
+
+      this.done = iterItem.done;
+
+      return iterItem;
+    }
+  }]);
+
   return TrackIterator;
 })(_intervalIterator2["default"]);
 
 exports["default"] = TrackIterator;
 module.exports = exports["default"];
-},{"interval-iterator":13}],31:[function(require,module,exports){
+},{"interval-iterator":29}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2125,7 +2084,112 @@ var _SeqEmitter2 = _interopRequireDefault(_SeqEmitter);
 
 exports["default"] = _SeqEmitter2["default"];
 module.exports = exports["default"];
-},{"./SeqEmitter":29}],32:[function(require,module,exports){
+},{"./SeqEmitter":26}],29:[function(require,module,exports){
+arguments[4][1][0].apply(exports,arguments)
+},{"./lib":31,"dup":1}],30:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ITERATOR = typeof Symbol !== "undefined" ? Symbol.iterator : "Symbol(Symbol.iterator)";
+
+var IntervalIterator = (function () {
+  function IntervalIterator(iter, interval) {
+    _classCallCheck(this, IntervalIterator);
+
+    this._iter = iter;
+    this._interval = +interval;
+    this._currentTime = 0;
+    this._iterItem = null;
+    this._done = false;
+  }
+
+  _createClass(IntervalIterator, [{
+    key: "next",
+    value: function next() {
+      var t0 = this._currentTime + this._interval;
+
+      if (this._done) {
+        return { done: true, value: [] };
+      }
+
+      var result = [];
+      var iterItem = undefined;
+
+      while ((iterItem = this._next(t0)) !== null) {
+        result.push(iterItem);
+      }
+
+      this._currentTime = t0;
+
+      return { done: false, value: result };
+    }
+  }, {
+    key: ITERATOR,
+    value: function value() {
+      return this;
+    }
+  }, {
+    key: "_next",
+    value: function _next(t0) {
+      if (this._iterItem) {
+        return this._nextIterItem(t0);
+      }
+
+      var iterItem = this._iter.next();
+
+      if (!iterItem.done) {
+        this._iterItem = iterItem.value;
+
+        return this._nextIterItem(t0);
+      }
+
+      this._done = true;
+
+      return null;
+    }
+  }, {
+    key: "_nextIterItem",
+    value: function _nextIterItem(t0) {
+      if (t0 <= this._iterItem.time) {
+        return null;
+      }
+
+      var iterItem = this._iterItem;
+
+      this._iterItem = null;
+
+      return iterItem;
+    }
+  }]);
+
+  return IntervalIterator;
+})();
+
+exports["default"] = IntervalIterator;
+module.exports = exports["default"];
+},{}],31:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _IntervalIterator = require("./IntervalIterator");
+
+var _IntervalIterator2 = _interopRequireDefault(_IntervalIterator);
+
+exports["default"] = _IntervalIterator2["default"];
+module.exports = exports["default"];
+},{"./IntervalIterator":30}],32:[function(require,module,exports){
 /*!
  * strip-bom-string <https://github.com/jonschlinkert/strip-bom-string>
  *
