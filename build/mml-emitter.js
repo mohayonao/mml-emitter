@@ -1,5 +1,5 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.MMLEmitter = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-module.exports = require("./lib");
+module.exports = require("./lib").default;
 
 },{"./lib":3}],2:[function(require,module,exports){
 "use strict";
@@ -7,14 +7,6 @@ module.exports = require("./lib");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _seqEmitter = require("seq-emitter");
 
@@ -32,6 +24,14 @@ var _stripComments = require("strip-comments");
 
 var _stripComments2 = _interopRequireDefault(_stripComments);
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var MMLEmitter = (function (_SeqEmitter) {
   _inherits(MMLEmitter, _SeqEmitter);
 
@@ -41,11 +41,11 @@ var MMLEmitter = (function (_SeqEmitter) {
     _classCallCheck(this, MMLEmitter);
 
     if (config.reverseOctave) {
-      source = (0, _reverseOctave2["default"])(source);
+      source = (0, _reverseOctave2.default)(source);
     }
 
-    var MMLIteratorClass = config.MMLIterator || _mmlIterator2["default"];
-    var tracks = (0, _stripComments2["default"])(source).split(";");
+    var MMLIteratorClass = config.MMLIterator || _mmlIterator2.default;
+    var tracks = (0, _stripComments2.default)(source).split(";");
 
     tracks = tracks.filter(function (source) {
       return !!source.trim();
@@ -54,44 +54,39 @@ var MMLEmitter = (function (_SeqEmitter) {
       return new MMLIteratorClass(track, config);
     });
 
-    _get(Object.getPrototypeOf(MMLEmitter.prototype), "constructor", this).call(this, tracks, config);
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(MMLEmitter).call(this, tracks, config));
   }
 
   return MMLEmitter;
-})(_seqEmitter2["default"]);
+})(_seqEmitter2.default);
 
-exports["default"] = MMLEmitter;
-module.exports = exports["default"];
-},{"./reverseOctave":4,"mml-iterator":14,"seq-emitter":25,"strip-comments":33}],3:[function(require,module,exports){
+exports.default = MMLEmitter;
+},{"./reverseOctave":4,"mml-iterator":17,"seq-emitter":28,"strip-comments":33}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
 var _MMLEmitter = require("./MMLEmitter");
 
 var _MMLEmitter2 = _interopRequireDefault(_MMLEmitter);
 
-exports["default"] = _MMLEmitter2["default"];
-module.exports = exports["default"];
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _MMLEmitter2.default;
 },{"./MMLEmitter":2}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = reverseOctave;
-
+exports.default = reverseOctave;
 function reverseOctave(source) {
   return source.replace(/[<>]/g, function (str) {
     return str === "<" ? ">" : "<";
   });
 }
-
-module.exports = exports["default"];
 },{}],5:[function(require,module,exports){
 /*!
  * cr <https://github.com/jonschlinkert/cr>
@@ -451,7 +446,7 @@ function hasOwn(obj, key) {
   return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
-},{"is-extendable":13}],8:[function(require,module,exports){
+},{"is-extendable":16}],8:[function(require,module,exports){
 'use strict';
 
 var extend = require('extend-shallow');
@@ -718,7 +713,7 @@ function Code(str, comment) {
 
 module.exports = Code;
 
-},{"./utils":12,"parse-code-context":23}],11:[function(require,module,exports){
+},{"./utils":12,"parse-code-context":26}],11:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -867,7 +862,113 @@ utils.strip = function(lines) {
   return res;
 };
 
-},{"cr":5,"noncharacters":21,"quoted-string-regex":24,"strip-bom-string":32}],13:[function(require,module,exports){
+},{"cr":5,"noncharacters":24,"quoted-string-regex":27,"strip-bom-string":32}],13:[function(require,module,exports){
+module.exports = require("./lib");
+
+},{"./lib":15}],14:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ITERATOR = typeof Symbol !== "undefined" ? Symbol.iterator : "Symbol(Symbol.iterator)";
+
+var IntervalIterator = (function () {
+  function IntervalIterator(iter, interval) {
+    _classCallCheck(this, IntervalIterator);
+
+    this._iter = iter;
+    this._interval = +interval;
+    this._currentTime = 0;
+    this._iterItem = null;
+    this._done = false;
+  }
+
+  _createClass(IntervalIterator, [{
+    key: "next",
+    value: function next() {
+      var t0 = this._currentTime + this._interval;
+
+      if (this._done) {
+        return { done: true, value: [] };
+      }
+
+      var result = [];
+      var iterItem = undefined;
+
+      while ((iterItem = this._next(t0)) !== null) {
+        result.push(iterItem);
+      }
+
+      this._currentTime = t0;
+
+      return { done: false, value: result };
+    }
+  }, {
+    key: ITERATOR,
+    value: function value() {
+      return this;
+    }
+  }, {
+    key: "_next",
+    value: function _next(t0) {
+      if (this._iterItem) {
+        return this._nextIterItem(t0);
+      }
+
+      var iterItem = this._iter.next();
+
+      if (!iterItem.done) {
+        this._iterItem = iterItem.value;
+
+        return this._nextIterItem(t0);
+      }
+
+      this._done = true;
+
+      return null;
+    }
+  }, {
+    key: "_nextIterItem",
+    value: function _nextIterItem(t0) {
+      if (t0 <= this._iterItem.time) {
+        return null;
+      }
+
+      var iterItem = this._iterItem;
+
+      this._iterItem = null;
+
+      return iterItem;
+    }
+  }]);
+
+  return IntervalIterator;
+})();
+
+exports["default"] = IntervalIterator;
+module.exports = exports["default"];
+},{}],15:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _IntervalIterator = require("./IntervalIterator");
+
+var _IntervalIterator2 = _interopRequireDefault(_IntervalIterator);
+
+exports["default"] = _IntervalIterator2["default"];
+module.exports = exports["default"];
+},{"./IntervalIterator":14}],16:[function(require,module,exports){
 /*!
  * is-extendable <https://github.com/jonschlinkert/is-extendable>
  *
@@ -882,9 +983,9 @@ module.exports = function isExtendable(val) {
     && (typeof val === 'object' || typeof val === 'function');
 };
 
-},{}],14:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"./lib":20,"dup":1}],15:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
+arguments[4][13][0].apply(exports,arguments)
+},{"./lib":23,"dup":13}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -899,7 +1000,7 @@ exports["default"] = {
   loopCount: 2
 };
 module.exports = exports["default"];
-},{}],16:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1170,7 +1271,7 @@ function isNoteEvent(command) {
   return command.type === _Syntax2["default"].Note || command.type === _Syntax2["default"].Rest;
 }
 module.exports = exports["default"];
-},{"./DefaultParams":15,"./MMLParser":17,"./Syntax":19}],17:[function(require,module,exports){
+},{"./DefaultParams":18,"./MMLParser":20,"./Syntax":22}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1514,7 +1615,7 @@ var MMLParser = (function () {
 
 exports["default"] = MMLParser;
 module.exports = exports["default"];
-},{"./Scanner":18,"./Syntax":19}],18:[function(require,module,exports){
+},{"./Scanner":21,"./Syntax":22}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1607,7 +1708,7 @@ var Scanner = (function () {
 
 exports["default"] = Scanner;
 module.exports = exports["default"];
-},{}],19:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1628,7 +1729,7 @@ exports["default"] = {
   LoopEnd: "LoopEnd"
 };
 module.exports = exports["default"];
-},{}],20:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1643,7 +1744,7 @@ var _MMLIterator2 = _interopRequireDefault(_MMLIterator);
 
 exports["default"] = _MMLIterator2["default"];
 module.exports = exports["default"];
-},{"./MMLIterator":16}],21:[function(require,module,exports){
+},{"./MMLIterator":19}],24:[function(require,module,exports){
 /*!
  * noncharacters <https://github.com/jonschlinkert/noncharacters>
  *
@@ -1690,7 +1791,7 @@ module.exports = [
   '\uFDEF'
 ];
 
-},{}],22:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 /* eslint-disable no-unused-vars */
 'use strict';
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1731,7 +1832,7 @@ module.exports = Object.assign || function (target, source) {
 	return to;
 };
 
-},{}],23:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 /*!
  * parse-code-context <https://github.com/jonschlinkert/parse-code-context>
  * Regex originally sourced and modified from <https://github.com/visionmedia/dox>.
@@ -1845,7 +1946,7 @@ module.exports = function (str, i) {
   return null;
 };
 
-},{}],24:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /*!
  * quoted-string-regex <https://github.com/jonschlinkert/quoted-string-regex>
  *
@@ -1859,25 +1960,17 @@ module.exports = function() {
   return /'([^'\\]*\\.)*[^']*'|"([^"\\]*\\.)*[^"]*"/g;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 arguments[4][1][0].apply(exports,arguments)
-},{"./lib":28,"dup":1}],26:[function(require,module,exports){
+},{"./lib":31,"dup":1}],29:[function(require,module,exports){
 (function (global){
 "use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x4, _x5, _x6) { var _again = true; _function: while (_again) { var object = _x4, property = _x5, receiver = _x6; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x4 = parent; _x5 = property; _x6 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _events = require("events");
 
@@ -1893,26 +1986,40 @@ var _objectAssign = require("object-assign");
 
 var _objectAssign2 = _interopRequireDefault(_objectAssign);
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var SeqEmitter = (function (_EventEmitter) {
   _inherits(SeqEmitter, _EventEmitter);
 
   function SeqEmitter(tracks) {
-    var _this = this;
-
     var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
     _classCallCheck(this, SeqEmitter);
 
-    _get(Object.getPrototypeOf(SeqEmitter.prototype), "constructor", this).call(this);
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SeqEmitter).call(this));
 
-    this._scheduler = config.scheduler || new _webAudioScheduler2["default"](config);
-    this._tracks = tracks.map(function (track, trackNumber) {
-      return new _TrackIterator2["default"](track, _this._scheduler.interval, trackNumber);
+    if (config.scheduler) {
+      _this._scheduler = config.scheduler;
+      _this._ownScheduler = false;
+    } else {
+      _this._scheduler = new _webAudioScheduler2.default(config);
+      _this._ownScheduler = true;
+    }
+
+    _this._tracks = tracks.map(function (track, trackNumber) {
+      return new _TrackIterator2.default(track, _this._scheduler.interval, trackNumber);
     });
-    this._startTime = -1;
-    this._stopTime = -1;
-    this._timerId = 0;
-    this._state = "suspended";
+    _this._startTime = -1;
+    _this._stopTime = -1;
+    _this._timerId = 0;
+    _this._state = "suspended";
+    return _this;
   }
 
   _createClass(SeqEmitter, [{
@@ -1922,16 +2029,18 @@ var SeqEmitter = (function (_EventEmitter) {
 
       var t0 = arguments.length <= 0 || arguments[0] === undefined ? this._scheduler.currentTime : arguments[0];
 
-      /* istanbul ignore else */
       if (this._startTime === -1) {
         this._startTime = t0;
-        this._scheduler.start();
+        if (this._ownScheduler) {
+          this._scheduler.start();
+        }
         this._timerId = this._scheduler.insert(t0, function (e) {
           _this2._state = "running";
           _this2.emit("statechange", { type: "statechange", playbackTime: t0, state: _this2._state });
           _this2._process(e.playbackTime);
         });
       } else {
+        /* istanbul ignore else */
         /* eslint no-lonely-if: 0 */
         if (this._startTime !== -1) {
           global.console.warn("Failed to execute 'start' on SeqEmitter: cannot call start more than once.");
@@ -1945,13 +2054,14 @@ var SeqEmitter = (function (_EventEmitter) {
 
       var t0 = arguments.length <= 0 || arguments[0] === undefined ? this._scheduler.currentTime : arguments[0];
 
-      /* istanbul ignore else */
       if (this._startTime !== -1 && this._stopTime === -1) {
         this._stopTime = t0;
         this._scheduler.insert(t0, function () {
           _this3._state = "closed";
           _this3.emit("statechange", { type: "statechange", playbackTime: t0, state: _this3._state });
-          _this3._scheduler.stop();
+          if (_this3._ownScheduler) {
+            _this3._scheduler.stop();
+          }
           _this3._scheduler.remove(_this3._timerId);
           _this3._timerId = 0;
         });
@@ -1999,9 +2109,14 @@ var SeqEmitter = (function (_EventEmitter) {
         var playbackTime = _this5._startTime + items.time;
 
         if (typeof type === "string") {
-          _this5.emit(type, (0, _objectAssign2["default"])({ playbackTime: playbackTime, trackNumber: trackNumber }, items));
+          _this5.emit(type, (0, _objectAssign2.default)({ playbackTime: playbackTime, trackNumber: trackNumber }, items));
         }
       });
+    }
+  }, {
+    key: "scheduler",
+    get: function get() {
+      return this._scheduler;
     }
   }, {
     key: "state",
@@ -2013,29 +2128,30 @@ var SeqEmitter = (function (_EventEmitter) {
   return SeqEmitter;
 })(_events.EventEmitter);
 
-exports["default"] = SeqEmitter;
-module.exports = exports["default"];
+exports.default = SeqEmitter;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./TrackIterator":27,"events":6,"object-assign":22,"web-audio-scheduler":34}],27:[function(require,module,exports){
+},{"./TrackIterator":30,"events":6,"object-assign":25,"web-audio-scheduler":34}],30:[function(require,module,exports){
 "use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
 var _intervalIterator = require("interval-iterator");
 
 var _intervalIterator2 = _interopRequireDefault(_intervalIterator);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var TrackIterator = (function (_IntervalIterator) {
   _inherits(TrackIterator, _IntervalIterator);
@@ -2043,10 +2159,11 @@ var TrackIterator = (function (_IntervalIterator) {
   function TrackIterator(iter, interval, trackNumber) {
     _classCallCheck(this, TrackIterator);
 
-    _get(Object.getPrototypeOf(TrackIterator.prototype), "constructor", this).call(this, iter, interval);
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TrackIterator).call(this, iter, interval));
 
-    this.trackNumber = trackNumber;
-    this.done = false;
+    _this.trackNumber = trackNumber;
+    _this.done = false;
+    return _this;
   }
 
   _createClass(TrackIterator, [{
@@ -2065,131 +2182,24 @@ var TrackIterator = (function (_IntervalIterator) {
   }]);
 
   return TrackIterator;
-})(_intervalIterator2["default"]);
+})(_intervalIterator2.default);
 
-exports["default"] = TrackIterator;
-module.exports = exports["default"];
-},{"interval-iterator":29}],28:[function(require,module,exports){
+exports.default = TrackIterator;
+},{"interval-iterator":13}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var _SeqEmitter = require("./SeqEmitter");
 
 var _SeqEmitter2 = _interopRequireDefault(_SeqEmitter);
 
-exports["default"] = _SeqEmitter2["default"];
-module.exports = exports["default"];
-},{"./SeqEmitter":26}],29:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"./lib":31,"dup":1}],30:[function(require,module,exports){
-"use strict";
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var ITERATOR = typeof Symbol !== "undefined" ? Symbol.iterator : "Symbol(Symbol.iterator)";
-
-var IntervalIterator = (function () {
-  function IntervalIterator(iter, interval) {
-    _classCallCheck(this, IntervalIterator);
-
-    this._iter = iter;
-    this._interval = +interval;
-    this._currentTime = 0;
-    this._iterItem = null;
-    this._done = false;
-  }
-
-  _createClass(IntervalIterator, [{
-    key: "next",
-    value: function next() {
-      var t0 = this._currentTime + this._interval;
-
-      if (this._done) {
-        return { done: true, value: [] };
-      }
-
-      var result = [];
-      var iterItem = undefined;
-
-      while ((iterItem = this._next(t0)) !== null) {
-        result.push(iterItem);
-      }
-
-      this._currentTime = t0;
-
-      return { done: false, value: result };
-    }
-  }, {
-    key: ITERATOR,
-    value: function value() {
-      return this;
-    }
-  }, {
-    key: "_next",
-    value: function _next(t0) {
-      if (this._iterItem) {
-        return this._nextIterItem(t0);
-      }
-
-      var iterItem = this._iter.next();
-
-      if (!iterItem.done) {
-        this._iterItem = iterItem.value;
-
-        return this._nextIterItem(t0);
-      }
-
-      this._done = true;
-
-      return null;
-    }
-  }, {
-    key: "_nextIterItem",
-    value: function _nextIterItem(t0) {
-      if (t0 <= this._iterItem.time) {
-        return null;
-      }
-
-      var iterItem = this._iterItem;
-
-      this._iterItem = null;
-
-      return iterItem;
-    }
-  }]);
-
-  return IntervalIterator;
-})();
-
-exports["default"] = IntervalIterator;
-module.exports = exports["default"];
-},{}],31:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _IntervalIterator = require("./IntervalIterator");
-
-var _IntervalIterator2 = _interopRequireDefault(_IntervalIterator);
-
-exports["default"] = _IntervalIterator2["default"];
-module.exports = exports["default"];
-},{"./IntervalIterator":30}],32:[function(require,module,exports){
+exports.default = _SeqEmitter2.default;
+},{"./SeqEmitter":29}],32:[function(require,module,exports){
 /*!
  * strip-bom-string <https://github.com/jonschlinkert/strip-bom-string>
  *
@@ -2302,7 +2312,7 @@ function discard(str, comment, opts) {
   if (opts && opts.safe === true && ch === '!') {
     return str;
   }
-  return str.split(comment.raw).join('');
+  return str.replace(comment.raw, '');
 }
 
 /**
@@ -2320,8 +2330,8 @@ module.exports.first = first;
 module.exports.line = line;
 
 },{"extract-comments":8}],34:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"./lib":37,"dup":1}],35:[function(require,module,exports){
+arguments[4][13][0].apply(exports,arguments)
+},{"./lib":37,"dup":13}],35:[function(require,module,exports){
 (function (global){
 "use strict";
 
